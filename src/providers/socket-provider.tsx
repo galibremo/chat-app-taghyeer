@@ -23,7 +23,7 @@ import {
   RawConversation,
   SocketConversationUpdatedPayload,
   SocketMessageNewPayload,
-} from "@/types/chat";
+} from "@/modules/chat/types/chat.types";
 
 interface SocketContextType {
   socket: Socket | null;

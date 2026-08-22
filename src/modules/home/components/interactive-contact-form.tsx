@@ -36,7 +36,8 @@ export default function InteractiveContactForm() {
             </h2>
 
             <p className="text-sm text-gray-200 leading-relaxed">
-              Stop wasting time on authentication, billing, and database setup. Get the complete codebase and launch your startup in days.
+              Stop wasting time on authentication, billing, and database setup.
+              Get the complete codebase and launch your startup in days.
             </p>
 
             {/* List of benefits */}
@@ -50,7 +51,8 @@ export default function InteractiveContactForm() {
                     Lifetime Access
                   </h4>
                   <p className="text-[11px] text-gray-200">
-                    Pay once and get access to the GitHub repository and all future updates forever.
+                    Pay once and get access to the GitHub repository and all
+                    future updates forever.
                   </p>
                 </div>
               </div>
@@ -64,7 +66,8 @@ export default function InteractiveContactForm() {
                     Full Production Ready
                   </h4>
                   <p className="text-[11px] text-gray-200">
-                    Built on Next.js 15 App Router, React Server Components, and Shadcn UI.
+                    Built on Next.js 15 App Router, React Server Components, and
+                    Shadcn UI.
                   </p>
                 </div>
               </div>
@@ -80,10 +83,11 @@ export default function InteractiveContactForm() {
             <div className="space-y-6">
               <div className="text-left space-y-1">
                 <h3 className="font-display font-bold text-lg text-white">
-                  Boilerplate Portal
+                  Chat Portal
                 </h3>
                 <p className="text-xs text-gray-200">
-                  Log in to access your boilerplate repository or start building a new app.
+                  Log in to access your chat repository or start building a new
+                  app.
                 </p>
               </div>
 

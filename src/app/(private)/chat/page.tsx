@@ -1,6 +1,17 @@
-"use client";
-
+import type { Metadata } from "next";
 import React from "react";
+
+export const metadata: Metadata = {
+  title: "Messages",
+  description:
+    "View and manage your real-time direct and group chat conversations on ChatFlow.",
+  openGraph: {
+    title: "Messages | ChatFlow",
+    description:
+      "View and manage your real-time direct and group chat conversations on ChatFlow.",
+    url: "/chat",
+  },
+};
 
 export default function ChatRootPage() {
   return (

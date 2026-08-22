@@ -5,7 +5,7 @@ import {
   RawMessage,
   SocketMessageNewPayload,
   User,
-} from "@/types/chat";
+} from "../types/chat.types";
 
 export function isValidLastMessage(msg: unknown): msg is RawMessage {
   if (!msg || typeof msg !== "object") return false;

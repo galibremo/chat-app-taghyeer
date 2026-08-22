@@ -17,7 +17,7 @@ import {
   useMessagesQuery,
   useSendMessageMutation,
 } from "../actions/chat.mutations";
-import { NormalizedConversation, NormalizedMessage } from "@/types/chat";
+import { NormalizedConversation, NormalizedMessage } from "../types/chat.types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 

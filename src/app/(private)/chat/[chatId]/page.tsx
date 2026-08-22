@@ -1,53 +1,23 @@
-"use client";
+import type { Metadata } from "next";
+import { ChatRoomClient } from "@/modules/chat/components/chat-room-client";
 
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
-import { AnimatePresence } from "motion/react";
-import { useConversationsQuery } from "@/modules/chat/actions/chat.mutations";
-import { ChatFeed } from "@/modules/chat/components/chat-feed";
-import { ChatDetailsPanel } from "@/modules/chat/components/chat-details-panel";
-import { AddMembersDialog } from "@/modules/chat/components/add-members-dialog";
+type Props = {
+  params: Promise<{ chatId: string }>;
+};
 
-export default function ChatRoomPage() {
-  const params = useParams();
-  const chatId = typeof params?.chatId === "string" ? params.chatId : "";
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { chatId } = await params;
+  return {
+    title: "Chat Room",
+    description: `Real-time chat conversation room (${chatId}) on ChatFlow.`,
+    openGraph: {
+      title: "Chat Room | ChatFlow",
+      description: `Real-time chat conversation room (${chatId}) on ChatFlow.`,
+    },
+  };
+}
 
-  const { data: conversations = [] } = useConversationsQuery();
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
-
-  const activeConversation =
-    conversations.find((c) => c._id === chatId) || null;
-
-  return (
-    <div className="flex-1 flex h-full w-full relative overflow-hidden bg-background">
-      {/* Center Chat Feed */}
-      <ChatFeed
-        conversation={activeConversation}
-        onToggleDetails={() => setIsDetailsOpen((prev) => !prev)}
-        isDetailsOpen={isDetailsOpen}
-      />
-
-      {/* Right Details Panel */}
-      <AnimatePresence>
-        {isDetailsOpen && activeConversation && (
-          <ChatDetailsPanel
-            key={activeConversation._id}
-            conversation={activeConversation}
-            onClose={() => setIsDetailsOpen(false)}
-            onOpenAddMembers={() => setIsAddMembersOpen(true)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Add Members Dialog */}
-      {activeConversation && activeConversation.type === "group" && (
-        <AddMembersDialog
-          isOpen={isAddMembersOpen}
-          onClose={() => setIsAddMembersOpen(false)}
-          conversation={activeConversation}
-        />
-      )}
-    </div>
-  );
+export default async function ChatRoomPage({ params }: Props) {
+  const { chatId } = await params;
+  return <ChatRoomClient chatId={chatId} />;
 }
