@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   SentIcon,
   InformationCircleIcon,
   UserGroupIcon,
   CheckmarkBadge01Icon,
+  ArrowLeft01Icon,
 } from "hugeicons-react";
 
 import { useAuth } from "@/providers/auth-provider";
@@ -29,6 +31,7 @@ export function ChatFeed({
   onToggleDetails,
   isDetailsOpen,
 }: ChatFeedProps) {
+  const router = useRouter();
   const { user } = useAuth();
   const currentUserId = user?._id || "";
 
@@ -102,7 +105,18 @@ export function ChatFeed({
     <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden select-none">
       {/* Header */}
       <div className="p-3.5 border-b border-border flex items-center justify-between bg-card text-card-foreground backdrop-blur-md z-10">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Mobile Back Button */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => router.push("/chat")}
+            className="md:hidden text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer shrink-0 mr-0.5"
+            title="Back to conversations"
+          >
+            <ArrowLeft01Icon className="w-5 h-5" />
+          </Button>
+
           {conversation.type === "group" ? (
             <Avatar size="md" className="bg-primary text-primary-foreground">
               <AvatarFallback className="text-primary-foreground">

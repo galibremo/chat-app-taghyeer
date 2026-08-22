@@ -65,7 +65,7 @@ export function ChatSidebar({
   };
 
   return (
-    <div className="w-full md:w-80 lg:w-96 flex flex-col h-full bg-background border-r border-border select-none">
+    <div className="w-full flex flex-col h-full bg-background select-none">
       {/* Header Profile Bar */}
       <div className="p-3.5 border-b border-border flex items-center justify-between bg-card text-card-foreground">
         <div className="flex items-center gap-3">
