@@ -152,50 +152,58 @@ export function ChatFeed({
           const isOwn = msg.sender === currentUserId;
           const senderName =
             participantMap.get(msg.sender) ||
-            (isOwn ? user?.name : "Participant");
+            (isOwn ? user?.name || "You" : "User");
+
+          if (isOwn) {
+            return (
+              <div key={msg._id} className="flex flex-col items-end space-y-1">
+                {/* Outgoing Message Bubble (Text Only) */}
+                <div className="max-w-[75%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed wrap-break-word shadow-md bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-br-xs">
+                  {msg.text}
+                </div>
+
+                {/* Time & Status OUTSIDE the bubble */}
+                <div className="text-[10px] text-zinc-400 font-mono flex items-center gap-1.5 px-1">
+                  <span>{formatMessageTime(msg.createdAt)}</span>
+                  <span className="inline-flex items-center">
+                    {msg.status === "pending" ? (
+                      <span
+                        className="w-2.5 h-2.5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"
+                        title="Sending..."
+                      />
+                    ) : (
+                      <span
+                        className="text-[11px] font-bold text-indigo-400"
+                        title="Sent"
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            );
+          }
 
           return (
-            <div
-              key={msg._id}
-              className={`flex flex-col ${isOwn ? "items-end" : "items-start"} space-y-1`}
-            >
-              {conversation.type === "group" && !isOwn && (
-                <span className="text-[10px] font-medium text-zinc-400 px-1">
-                  {senderName}
-                </span>
-              )}
-
+            <div key={msg._id} className="flex items-start gap-2.5 max-w-[80%] md:max-w-[70%]">
+              {/* Incoming Sender Avatar */}
               <div
-                className={`max-w-[75%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed wrap-break-word shadow-md ${
-                  isOwn
-                    ? "bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-br-none"
-                    : "bg-zinc-800/90 border border-zinc-700/50 text-zinc-100 rounded-bl-none"
-                }`}
+                className="w-8 h-8 rounded-full bg-linear-to-tr from-cyan-600 to-blue-600 flex items-center justify-center font-bold text-white text-xs shadow-sm shrink-0 mt-0.5"
+                title={senderName}
               >
-                <div>{msg.text}</div>
-                <div
-                  className={`text-[9px] mt-1 flex items-center justify-end gap-1.5 font-mono ${
-                    isOwn ? "text-indigo-200/80" : "text-zinc-400"
-                  }`}
-                >
-                  <span>{formatMessageTime(msg.createdAt)}</span>
-                  {isOwn && (
-                    <span className="inline-flex items-center">
-                      {msg.status === "pending" ? (
-                        <span
-                          className="w-2.5 h-2.5 border-2 border-indigo-200 border-t-transparent rounded-full animate-spin"
-                          title="Sending..."
-                        />
-                      ) : (
-                        <span
-                          className="text-[11px] font-bold text-indigo-200"
-                          title="Sent"
-                        >
-                          ✓
-                        </span>
-                      )}
-                    </span>
-                  )}
+                {senderName.charAt(0).toUpperCase()}
+              </div>
+
+              <div className="flex flex-col items-start space-y-1">
+                {/* Incoming Message Bubble (Text Only) */}
+                <div className="px-4 py-2.5 rounded-2xl text-xs leading-relaxed wrap-break-word shadow-md bg-zinc-800/90 border border-zinc-700/50 text-zinc-100 rounded-bl-xs">
+                  {msg.text}
+                </div>
+
+                {/* Time OUTSIDE the bubble */}
+                <div className="text-[10px] text-zinc-500 font-mono px-1">
+                  {formatMessageTime(msg.createdAt)}
                 </div>
               </div>
             </div>
