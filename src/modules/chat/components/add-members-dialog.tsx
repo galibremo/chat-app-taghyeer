@@ -1,8 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAddGroupParticipantsMutation, useUserSearchQuery } from "../actions/chat.mutations";
+import {
+  useAddGroupParticipantsMutation,
+  useUserSearchQuery,
+} from "../actions/chat.mutations";
 import { NormalizedConversation, User } from "../types/chat.types";
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface AddMembersDialogProps {
   isOpen: boolean;
@@ -21,9 +36,9 @@ export function AddMembersDialog({
   const { data: searchedUsers, isLoading } = useUserSearchQuery(searchTerm);
   const addMembersMutation = useAddGroupParticipantsMutation();
 
-  if (!isOpen) return null;
-
-  const existingMemberIds = new Set(conversation.participants.map((p) => p._id));
+  const existingMemberIds = new Set(
+    conversation.participants.map((p) => p._id),
+  );
 
   const toggleSelectUser = (user: User) => {
     if (selectedUsers.some((u) => u._id === user._id)) {
@@ -53,134 +68,135 @@ export function AddMembersDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+    <Dialog isOpen={isOpen} onClose={onClose}>
+      <DialogHeader>
+        <div>
+          <DialogTitle>Add Group Members</DialogTitle>
+          <DialogDescription>
+            Add new participants to &quot;{conversation.name}&quot;
+          </DialogDescription>
+        </div>
+        <DialogClose onClick={onClose} />
+      </DialogHeader>
+
+      <form onSubmit={handleAddMembers} className="space-y-4 pt-2">
+        {selectedUsers.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold text-zinc-100">Add Group Members</h3>
-            <p className="text-xs text-zinc-400">Add new participants to &quot;{conversation.name}&quot;</p>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+              New Members to Add ({selectedUsers.length})
+            </label>
+            <div className="flex flex-wrap gap-1.5 p-1 max-h-24 overflow-y-auto">
+              {selectedUsers.map((u) => (
+                <Badge
+                  key={u._id}
+                  variant="default"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-xs"
+                >
+                  {u.name}
+                  <button
+                    type="button"
+                    onClick={() => toggleSelectUser(u)}
+                    className="hover:text-primary-foreground/80 cursor-pointer font-bold"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors"
-          >
-            ✕
-          </button>
+        )}
+
+        <div>
+          <Input
+            type="text"
+            placeholder="Search users by name or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
+          />
         </div>
 
-        <form onSubmit={handleAddMembers} className="space-y-4">
-          {selectedUsers.length > 0 && (
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                New Members to Add ({selectedUsers.length})
-              </label>
-              <div className="flex flex-wrap gap-1.5 p-1 max-h-24 overflow-y-auto">
-                {selectedUsers.map((u) => (
-                  <span
-                    key={u._id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-900/60 text-indigo-200 border border-indigo-700/50"
-                  >
-                    {u.name}
-                    <button
-                      type="button"
-                      onClick={() => toggleSelectUser(u)}
-                      className="hover:text-white"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
+        <div className="max-h-48 overflow-y-auto space-y-1 border border-border rounded-xl p-2 bg-background/50">
+          {isLoading && (
+            <div className="text-center py-4 text-xs text-muted-foreground animate-pulse">
+              Searching users...
             </div>
           )}
 
-          <div>
-            <input
-              type="text"
-              placeholder="Search users by name or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              autoFocus
-            />
-          </div>
+          {!isLoading && searchTerm.trim().length < 2 && (
+            <div className="text-center py-4 text-xs text-muted-foreground">
+              Type at least 2 characters to search users
+            </div>
+          )}
 
-          <div className="max-h-48 overflow-y-auto space-y-1 border border-zinc-800 rounded-xl p-2 bg-zinc-950/50">
-            {isLoading && (
-              <div className="text-center py-4 text-xs text-zinc-500 animate-pulse">
-                Searching users...
-              </div>
-            )}
-
-            {!isLoading && searchTerm.trim().length < 2 && (
-              <div className="text-center py-4 text-xs text-zinc-500">
-                Type at least 2 characters to search users
-              </div>
-            )}
-
-            {!isLoading && searchTerm.trim().length >= 2 && (!searchedUsers || searchedUsers.length === 0) && (
-              <div className="text-center py-4 text-xs text-zinc-500">
+          {!isLoading &&
+            searchTerm.trim().length >= 2 &&
+            (!searchedUsers || searchedUsers.length === 0) && (
+              <div className="text-center py-4 text-xs text-muted-foreground">
                 No users found matching &quot;{searchTerm}&quot;
               </div>
             )}
 
-            {searchedUsers?.map((u) => {
-              const isAlreadyMember = existingMemberIds.has(u._id);
-              const isSelected = selectedUsers.some((sel) => sel._id === u._id);
+          {searchedUsers?.map((u) => {
+            const isAlreadyMember = existingMemberIds.has(u._id);
+            const isSelected = selectedUsers.some((sel) => sel._id === u._id);
 
-              return (
-                <button
-                  type="button"
-                  key={u._id}
-                  disabled={isAlreadyMember}
-                  onClick={() => !isAlreadyMember && toggleSelectUser(u)}
-                  className={`w-full flex items-center justify-between p-2 rounded-lg text-left text-xs transition-colors ${
-                    isAlreadyMember
-                      ? "opacity-50 cursor-not-allowed bg-zinc-900 text-zinc-500"
-                      : isSelected
-                        ? "bg-indigo-900/40 text-indigo-200 border border-indigo-700/50"
-                        : "hover:bg-zinc-800 text-zinc-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center font-semibold text-white">
+            return (
+              <button
+                type="button"
+                key={u._id}
+                disabled={isAlreadyMember}
+                onClick={() => !isAlreadyMember && toggleSelectUser(u)}
+                className={`cursor-pointer w-full flex items-center justify-between p-2 rounded-lg text-left text-xs transition-colors border ${
+                  isAlreadyMember
+                    ? "opacity-50 cursor-not-allowed bg-muted text-muted-foreground border-transparent"
+                    : isSelected
+                      ? "bg-accent text-accent-foreground border-border font-medium"
+                      : "bg-transparent hover:bg-accent/50 text-foreground border-transparent"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Avatar size="sm" className="bg-secondary text-secondary-foreground">
+                    <AvatarFallback className="text-secondary-foreground">
                       {u.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-medium text-zinc-200">{u.name}</div>
-                      <div className="text-[10px] text-zinc-400">{u.phone}</div>
-                    </div>
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-medium text-foreground">{u.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{u.phone}</div>
                   </div>
-                  <span className="text-xs font-semibold">
-                    {isAlreadyMember
-                      ? "Already Member"
-                      : isSelected
-                        ? "✓ Selected"
-                        : "+ Select"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                </div>
+                <span className="text-xs font-semibold">
+                  {isAlreadyMember
+                    ? "Already Member"
+                    : isSelected
+                      ? "✓ Selected"
+                      : "+ Select"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={selectedUsers.length === 0 || addMembersMutation.isPending}
-              className="px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white transition-all shadow-md shadow-indigo-600/30"
-            >
-              {addMembersMutation.isPending ? "Adding..." : "Add Members"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <DialogFooter className="pt-2 border-t-0">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={selectedUsers.length === 0 || addMembersMutation.isPending}
+            className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {addMembersMutation.isPending ? "Adding..." : "Add Members"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Dialog>
   );
 }
