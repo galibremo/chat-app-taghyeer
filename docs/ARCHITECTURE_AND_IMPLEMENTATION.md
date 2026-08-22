@@ -1,6 +1,6 @@
 # Complete Architecture & Implementation Documentation
 
-This document provides a comprehensive, step-by-step technical walkthrough of the Chat Application implementation. It covers architectural design decisions, state management with TanStack Query, real-time WebSockets, data normalization, error handling, and component structure.
+This document provides a comprehensive, step-by-step technical walkthrough of the Chat Application implementation. It covers architectural design decisions, state management with TanStack Query, real-time WebSockets, data normalization and sorting pipelines, responsive mobile/desktop layout strategies, centralized routing, SEO metadata handling, error resilience, and component structure.
 
 ---
 
@@ -10,19 +10,23 @@ This document provides a comprehensive, step-by-step technical walkthrough of th
 2. [Key Design Choices & Rationales](#2-key-design-choices--rationales)
    - [Why TanStack Query over Global State Libraries](#why-tanstack-query-over-global-state-libraries)
    - [Hybrid Messaging Architecture (REST Send + Socket Receive)](#hybrid-messaging-architecture-rest-send--socket-receive)
-   - [Layout Architecture (`/chat` Single-View vs. `/chat/[chatId]`)](#layout-architecture-chat-single-view-vs-chatchatid)
+   - [Centralized Route & API Registry (`src/routes/routes.ts`)](#centralized-route--api-registry-srcroutesroutests)
+   - [Layout Architecture & Responsive Adaptability](#layout-architecture--responsive-adaptability)
+   - [Next.js App Router, SEO Metadata & Server Components](#nextjs-app-router-seo-metadata--server-components)
    - [Next.js Rewrite Proxy & CORS Bypass](#nextjs-rewrite-proxy--cors-bypass)
-3. [Data Normalization Pipeline](#3-data-normalization-pipeline)
+3. [Data Normalization & Real-Time Sorting Pipeline](#3-data-normalization--real-time-sorting-pipeline)
    - [Bridging API & WebSocket Inconsistencies](#bridging-api--websocket-inconsistencies)
-   - [Normalization Utilities](#normalization-utilities)
+   - [Timestamp Calculation & Deterministic List Sorting](#timestamp-calculation--deterministic-list-sorting)
+   - [Normalization & Reordering Utilities](#normalization--reordering-utilities)
 4. [Real-Time WebSocket System (`SocketProvider`)](#4-real-time-websocket-system-socketprovider)
-   - [Connection Handshake & Reconnection Strategy](#connection-handshake--reconnection-strategy)
-   - [Real-Time Event Processing](#real-time-event-processing)
+   - [Connection Handshake & Microtask Deferred State](#connection-handshake--microtask-deferred-state)
+   - [Real-Time Event Processing & Cache Reordering](#real-time-event-processing--cache-reordering)
 5. [TanStack Query & Cache Management](#5-tanstack-query--cache-management)
    - [Query Keys Structure](#query-keys-structure)
    - [Optimistic UI Updates & Cache Merging](#optimistic-ui-updates--cache-merging)
    - [Cache Invalidation & Background Refetching](#cache-invalidation--background-refetching)
-6. [Defensive Error Handling Strategy](#6-defensive-error-handling-strategy)
+6. [Defensive Error Handling & API Resilience](#6-defensive-error-handling--api-resilience)
+   - [Robust Error Body Parsing in `fetchClient`](#robust-error-body-parsing-in-fetchclient)
    - [Handling Generic 500 Server Errors & Mongoose Leaks](#handling-generic-500-server-errors--mongoose-leaks)
 7. [Step-by-Step Feature Walkthrough](#7-step-by-step-feature-walkthrough)
    - [Authentication & Session Flow](#authentication--session-flow)
@@ -34,23 +38,30 @@ This document provides a comprehensive, step-by-step technical walkthrough of th
 
 ## 1. Executive Summary & Architectural Highlights
 
-The application is built on **Next.js (App Router)**, **TypeScript**, **TailwindCSS**, **TanStack Query (v5)**, and **Socket.io-client**. It connects to a backend REST API hosted at `https://frontend-task-chatapp.onrender.com/api` and a WebSocket server at the root URL.
+The application is built on **Next.js (App Router)**, **TypeScript**, **TailwindCSS**, **TanStack Query (v5)**, **Socket.io-client**, and **Motion (Framer Motion)**. It connects to a backend REST API hosted at `https://frontend-task-chatapp.onrender.com/api` and a WebSocket server at the root domain.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                               NEXT.JS FRONTEND                                  │
-│                                                                                 │
-│   ┌─────────────────────┐    REST    ┌──────────────────────────────────────┐   │
-│   │   TanStack Query    │ ─────────► │ Next.js Rewrites Proxy (`/api/*`)    │   │
-│   │  (Server State/Cache│            └──────────────────┬───────────────────┘   │
-│   └──────────▲──────────┘                               │ REST                  │
-│              │ Updates                                  ▼                       │
-│   ┌──────────┴──────────┐   Socket   ┌──────────────────────────────────────┐   │
-│   │   SocketProvider    │ ◄────────► │        Backend Remote Server         │   │
-│   │ (Real-time Manager) │            │ (REST API + Socket.io Server)        │   │
-│   └─────────────────────┘            └──────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                NEXT.JS FRONTEND                                  │
+│                                                                                  │
+│   ┌──────────────────────┐    REST    ┌──────────────────────────────────────┐   │
+│   │    TanStack Query    │ ─────────► │ Next.js Rewrites Proxy (`/api/*`)    │   │
+│   │ (Server State/Cache) │            └──────────────────┬───────────────────┘   │
+│   └──────────▲───────────┘                               │ REST                  │
+│              │ Updates                                   ▼                       │
+│   ┌──────────┴───────────┐   Socket   ┌──────────────────────────────────────┐   │
+│   │    SocketProvider    │ ◄────────► │        Backend Remote Server         │   │
+│   │ (Real-time Manager)  │            │ (REST API + Socket.io Server)        │   │
+│   └──────────────────────┘            └──────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Key Recent Architectural Enhancements:
+- **Centralized Route & API Registry**: Replaced all string literals with strongly-typed `route` and `apiRoute` helpers ([src/routes/routes.ts](file:///Users/galibremo/Code/chat-app/src/routes/routes.ts)).
+- **SEO & Server-Side Metadata**: Converted chat pages into Next.js Server Components with dynamic `metadata` / `generateMetadata` support, isolating client interaction into dedicated modules like [`ChatRoomClient`](file:///Users/galibremo/Code/chat-app/src/modules/chat/components/chat-room-client.tsx).
+- **Responsive Screen Adaptability**: Integrated [`useMediaQuery`](file:///Users/galibremo/Code/chat-app/src/hooks/use-media-query.ts) hook to seamlessly transition the chat details panel between a side-by-side desktop layout and a touch-friendly animated mobile drawer.
+- **Unified Real-time Sorting**: Built deterministically sorted conversation pipelines where incoming messages and metadata updates reorder the conversation list in real-time, popping active chats to the top instantly.
+- **Microtask Socket Initialization**: Wrapped socket state initialization inside `queueMicrotask` to eliminate React 19 concurrent render lifecycle warnings.
 
 ---
 
@@ -93,18 +104,57 @@ The messaging system employs a **Hybrid REST + WebSocket** approach:
 3. **Socket Send (`message:send`) as Fallback**:
    - Used if REST requests fail or for lower-latency peer messaging when socket connection is active.
 
-### Layout Architecture (`/chat` Single-View vs. `/chat/[chatId]`)
-Instead of using dynamic nested routes (`/chat/[chatId]`), the app utilizes a centralized `/chat` route with internal state management (`activeConversationId`):
+### Centralized Route & API Registry (`src/routes/routes.ts`)
+To eliminate typos, broken links, and refactoring friction caused by hardcoded URL strings, all client navigation paths and REST endpoint URLs are centralized in [src/routes/routes.ts](file:///Users/galibremo/Code/chat-app/src/routes/routes.ts):
 
-- **Persistent WebSocket Connection**: Navigating between chats does NOT trigger page-level remounts or re-initialize the Socket connection.
-- **Optimized Mobile & Desktop Split View**: Allows instant switching on desktop while supporting slide-in panel animations on mobile using smooth CSS transitions (`transform / opacity`).
-- **Zero Component Flashing**: Switching chats updates local state and triggers TanStack Query hook `useMessagesQuery(activeConversationId)`, which serves cached messages instantly while fetching fresh history in the background.
+```typescript
+export const route = {
+  public: { home: "/" },
+  private: {
+    chat: "/chat",
+    chatRoom: (conversationId: string) => `/chat/${conversationId}`,
+  },
+  protected: { login: "/login" },
+} as const;
+
+export const apiRoute = {
+  login: "/auth/login",
+  logout: "/auth/logout",
+  me: "/auth/me",
+  conversations: {
+    base: "/conversations",
+    group: "/conversations/group",
+    searchUsers: "/users/search",
+    messages: (id: string) => `/conversations/${id}/messages`,
+    participants: (id: string) => `/conversations/${id}/participants`,
+    participant: (id: string, userId: string) => `/conversations/${id}/participants/${userId}`,
+    admins: (id: string) => `/conversations/${id}/admins`,
+    detail: (id: string) => `/conversations/${id}`,
+  },
+  messages: { send: "/messages" },
+} as const;
+```
+
+### Layout Architecture & Responsive Adaptability
+Instead of remounting the layout on navigation, the application uses a unified split layout in `src/app/(private)/chat/layout.tsx`. To adapt smoothly across device sizes:
+
+- **Desktop View ($\ge 1024\text{px}$)**:
+  - Sidebar ([ChatSidebar](file:///Users/galibremo/Code/chat-app/src/modules/chat/components/chat-sidebar.tsx)) and Chat Room ([ChatRoomClient](file:///Users/galibremo/Code/chat-app/src/modules/chat/components/chat-room-client.tsx)) sit side-by-side.
+  - [ChatDetailsPanel](file:///Users/galibremo/Code/chat-app/src/modules/chat/components/chat-details-panel.tsx) expands into a third column inside the chat view.
+- **Mobile View ($< 1024\text{px}$)**:
+  - Navigating between `/chat` (list) and `/chat/[chatId]` (room) smoothly swaps main views.
+  - [useMediaQuery](file:///Users/galibremo/Code/chat-app/src/hooks/use-media-query.ts) hook (`(max-width: 1023px)`) converts `ChatDetailsPanel` into a fixed slide-in drawer (`fixed inset-y-0 right-0 z-50 w-full sm:w-80`) with an animated dark backdrop overlay and click-outside dismissal.
+
+### Next.js App Router, SEO Metadata & Server Components
+Page entrypoints are kept as **Server Components** to support Next.js App Router metadata generation for search engines and social sharing:
+- [`src/app/(private)/chat/page.tsx`](file:///Users/galibremo/Code/chat-app/src/app/(private)/chat/page.tsx) exports static `metadata`.
+- [`src/app/(private)/chat/[chatId]/page.tsx`](file:///Users/galibremo/Code/chat-app/src/app/(private)/chat/[chatId]/page.tsx) exports dynamic `generateMetadata({ params })`.
+- All client-side interactivity, state hooks, and Motion animations are delegated to the child component [`ChatRoomClient`](file:///Users/galibremo/Code/chat-app/src/modules/chat/components/chat-room-client.tsx).
 
 ### Next.js Rewrite Proxy & CORS Bypass
 To prevent CORS issues in production and local development, requests are routed through Next.js rewrites ([next.config.ts](file:///Users/galibremo/Code/chat-app/next.config.ts)):
 
 ```typescript
-// next.config.ts
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
@@ -120,20 +170,53 @@ In browser context, [client.ts](file:///Users/galibremo/Code/chat-app/src/lib/ap
 
 ---
 
-## 3. Data Normalization Pipeline
+## 3. Data Normalization & Real-Time Sorting Pipeline
 
 ### Bridging API & WebSocket Inconsistencies
-The API responses exhibit structural inconsistencies between REST endpoints and Socket events. The frontend handles these transparently through a dedicated normalization layer ([normalize.ts](file:///Users/galibremo/Code/chat-app/src/modules/chat/utils/normalize.ts)):
+The API responses exhibit structural inconsistencies between REST endpoints and Socket events. The frontend handles these transparently through a dedicated normalization layer ([src/modules/chat/utils/normalize.ts](file:///Users/galibremo/Code/chat-app/src/modules/chat/utils/normalize.ts)):
 
 | Resource / Field | REST API Behavior | Socket.io Behavior | Normalized Standard |
 | :--- | :--- | :--- | :--- |
 | **Message Identifier** | Uses `_id` | Uses `id` | Standardized to `_id` |
 | **Timestamp** | ISO 8601 String (`"2026-08-21T10:42:09.821Z"`) | Unix Timestamp Number (`1787313761682`) | Standardized to ISO String |
 | **Direct Conversation** | Key `participant: { _id, name, phone }` | N/A | Transformed to unified `participants: User[]` + `participant: User` |
-| **Group Conversation** | Key `participants: User[]` + `name` | Returns same updated group payload | Unified into `NormalizedConversation` |
+| **Group Conversation** | Key `participants: User[]` + `name` | Returns updated group payload | Unified into `NormalizedConversation` |
 | **Empty Group Message** | Returns `{}` instead of `null` | N/A | Sanitized to `null` via `isValidLastMessage` |
 
-### Normalization Utilities
+### Timestamp Calculation & Deterministic List Sorting
+To guarantee that conversations are always ordered by their true latest activity (whether from `conv.updatedAt` or the latest message timestamp), conversations pass through a unified sorting pipeline:
+
+```typescript
+export function getConversationTimestamp(conv: NormalizedConversation): number {
+  const lastMsgTime = conv.lastMessage?.createdAt
+    ? new Date(conv.lastMessage.createdAt).getTime()
+    : 0;
+  const updatedAtTime = conv.updatedAt
+    ? new Date(conv.updatedAt).getTime()
+    : 0;
+  const validLastMsgTime = isNaN(lastMsgTime) ? 0 : lastMsgTime;
+  const validUpdatedAtTime = isNaN(updatedAtTime) ? 0 : updatedAtTime;
+  return Math.max(validLastMsgTime, validUpdatedAtTime);
+}
+
+export function sortConversations(
+  conversations: NormalizedConversation[],
+): NormalizedConversation[] {
+  return [...conversations].sort(
+    (a, b) => getConversationTimestamp(b) - getConversationTimestamp(a),
+  );
+}
+
+export function updateConversationsList(
+  conversations: NormalizedConversation[],
+  updatedConv: NormalizedConversation,
+): NormalizedConversation[] {
+  const filtered = conversations.filter((c) => c._id !== updatedConv._id);
+  return sortConversations([updatedConv, ...filtered]);
+}
+```
+
+### Normalization & Reordering Utilities
 Defined in [src/modules/chat/utils/normalize.ts](file:///Users/galibremo/Code/chat-app/src/modules/chat/utils/normalize.ts):
 
 ```typescript
@@ -164,7 +247,7 @@ export function normalizeMessage(raw: RawMessage | SocketMessageNewPayload): Nor
 
 ## 4. Real-Time WebSocket System (`SocketProvider`)
 
-### Connection Handshake & Reconnection Strategy
+### Connection Handshake & Microtask Deferred State
 Implemented in [src/providers/socket-provider.tsx](file:///Users/galibremo/Code/chat-app/src/providers/socket-provider.tsx):
 
 ```typescript
@@ -180,8 +263,9 @@ const socketInstance = io(SOCKET_SERVER_URL, {
 - **Authentication**: JWT token retrieved from cookies via `getAuthTokenCookie()` is passed in the `auth` handshake object.
 - **Transport Fallback**: Starts with HTTP long-polling and upgrades to WebSocket to bypass strict corporate firewalls.
 - **Automatic Reconnection**: Reattempts connection up to 10 times with exponential backoff.
+- **Microtask Safe State Setting**: React 19 / Next.js state update warnings are avoided by deferring `setSocket` via `queueMicrotask(() => setSocket(socketInstance))`.
 
-### Real-Time Event Processing
+### Real-Time Event Processing & Cache Reordering
 
 #### Event 1: `message:new`
 Fires when any user sends a message in a conversation:
@@ -221,13 +305,22 @@ socketInstance.on("message:new", (payload: SocketMessageNewPayload) => {
     }
   );
 
-  // 2. Update conversation list lastMessage preview & position
+  // 2. Update conversation list lastMessage preview & move chat to top
   queryClient.setQueryData<NormalizedConversation[]>(
     CHAT_QUERY_KEYS.conversations,
-    (old = []) => old.map((conv) => conv._id === normalized.conversation
-      ? { ...conv, lastMessage: normalized, updatedAt: normalized.createdAt }
-      : conv
-    )
+    (old = []) => {
+      const targetConv = old.find((c) => c._id === normalized.conversation);
+      if (targetConv) {
+        const updatedConv: NormalizedConversation = {
+          ...targetConv,
+          lastMessage: normalized,
+          updatedAt: normalized.createdAt,
+        };
+        return updateConversationsList(old, updatedConv);
+      }
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations });
+      return old;
+    }
   );
 });
 ```
@@ -241,13 +334,7 @@ socketInstance.on("conversation:updated", (payload: SocketConversationUpdatedPay
 
   queryClient.setQueryData<NormalizedConversation[]>(
     CHAT_QUERY_KEYS.conversations,
-    (old = []) => {
-      const exists = old.some((c) => c._id === normalized._id);
-      if (exists) {
-        return old.map((c) => (c._id === normalized._id ? normalized : c));
-      }
-      return [normalized, ...old];
-    }
+    (old = []) => updateConversationsList(old, normalized),
   );
 });
 ```
@@ -257,7 +344,7 @@ socketInstance.on("conversation:updated", (payload: SocketConversationUpdatedPay
 ## 5. TanStack Query & Cache Management
 
 ### Query Keys Structure
-Centralized in [src/modules/chat/actions/chat.mutations.ts](file:///Users/galibremo/Code/chat-app/src/modules/chat/actions/chat.mutations.ts#L28-L32):
+Centralized in [src/modules/chat/actions/chat.mutations.ts](file:///Users/galibremo/Code/chat-app/src/modules/chat/actions/chat.mutations.ts):
 
 ```typescript
 export const CHAT_QUERY_KEYS = {
@@ -303,15 +390,53 @@ onError: (err, variables, context) => {
 ```
 
 ### Cache Invalidation & Background Refetching
-- **Conversations List (`useConversationsQuery`)**: Configured with `staleTime: 30,000ms`. Automatically invalidates on direct/group creation and group metadata mutations using `queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations })`.
+- **Conversations List (`useConversationsQuery`)**: Configured with `staleTime: 30,000ms`. Automatically normalized and sorted using `sortConversations` on raw payload return.
 - **User Search (`useUserSearchQuery`)**: Executed only when search string length $\ge 2$, with `staleTime: 60,000ms` to prevent redundant network requests while typing.
 
 ---
 
-## 6. Defensive Error Handling Strategy
+## 6. Defensive Error Handling & API Resilience
+
+### Robust Error Body Parsing in `fetchClient`
+API responses can return errors as direct strings, error objects `{ message, code }`, or nested standard structures. The `fetchClient` in [src/lib/api/client.ts](file:///Users/galibremo/Code/chat-app/src/lib/api/client.ts) safely extracts error details:
+
+```typescript
+if (!response.ok) {
+  let errorData: {
+    message?: string;
+    code?: string;
+    error?: string | { message?: string; code?: string };
+  } = {};
+  let errorMessage = "An error occurred while fetching data.";
+  
+  try {
+    errorData = await response.clone().json();
+    const rawError = errorData.error;
+    const errorMsgFromObj = typeof rawError === "object" ? rawError?.message : undefined;
+    errorMessage = errorData.message || (typeof rawError === "string" ? rawError : errorMsgFromObj) || errorMessage;
+  } catch {
+    // Ignore JSON parse error on error response
+  }
+
+  const rawError = errorData.error;
+  const errorStr =
+    typeof rawError === "string"
+      ? rawError
+      : typeof rawError === "object" && rawError?.message
+        ? rawError.message
+        : undefined;
+
+  throw new ApiError({
+    statusCode: response.status,
+    code: errorData.code || (typeof rawError === "object" ? rawError?.code : undefined) || "unknown_error",
+    message: errorMessage,
+    error: errorStr,
+  });
+}
+```
 
 ### Handling Generic 500 Server Errors & Mongoose Leaks
-As identified in testing, backend database validation failures (e.g. invalid MongoDB ObjectId strings) return unhandled 500 server errors leaking raw Mongoose cast error messages:
+Backend database validation failures (e.g., invalid MongoDB ObjectId strings) return unhandled 500 server errors leaking raw Mongoose cast error messages:
 
 ```json
 {
@@ -333,29 +458,29 @@ As identified in testing, backend database validation failures (e.g. invalid Mon
 
 ### Authentication & Session Flow
 1. **Login Request**: User submits phone and display name via `LoginForm`.
-2. **REST Execution**: Calls `POST /auth/login` via `fetchClient`.
+2. **REST Execution**: Calls `apiRoute.login` (`POST /auth/login`) via `fetchClient`.
 3. **Cookie Storage**: JWT token saved in document cookies via `setAuthTokenCookie(token)`.
-4. **Session Hydration**: `AuthProvider` calls `GET /auth/me` to fetch current user profile.
-5. **Socket Handshake**: `SocketProvider` automatically establishes an authenticated Socket.io connection.
+4. **Session Hydration**: `AuthProvider` calls `apiRoute.me` (`GET /auth/me`) to fetch current user profile.
+5. **Socket Handshake**: `SocketProvider` automatically establishes an authenticated Socket.io connection using deferred microtask state assignment.
 
 ### User Search & Direct Chat Creation
-1. **Search Modal**: Opening `NewChatDialog` triggers `useUserSearchQuery(debouncedQuery)` calling `GET /users/search?q=...`.
-2. **Start Conversation**: Selecting a user executes `useStartDirectMutation` calling `POST /conversations` with `{ userId }`.
-3. **Cache Insert**: The new conversation is normalized and prepended to `CHAT_QUERY_KEYS.conversations` cache.
+1. **Search Modal**: Opening `NewChatDialog` triggers `useUserSearchQuery(debouncedQuery)` calling `apiRoute.conversations.searchUsers` (`GET /users/search?q=...`).
+2. **Start Conversation**: Selecting a user executes `useStartDirectMutation` calling `apiRoute.conversations.base` (`POST /conversations`) with `{ userId }`.
+3. **Cache Insert**: The new conversation is normalized, reordered via `updateConversationsList`, and prepended to `CHAT_QUERY_KEYS.conversations` cache.
 
 ### Group Chat Creation & Admin Operations
-1. **Creation**: `CreateGroupDialog` submits name and `participantIds` array to `POST /conversations/group`. Creator is automatically assigned admin rights.
-2. **Add Members**: Admin opens `AddMembersDialog` calling `POST /conversations/{id}/participants` with `{ userIds }`.
-3. **Promote Admin**: Admin triggers `promoteGroupAdmin()` calling `POST /conversations/{id}/admins`.
-4. **Remove Member / Leave Group**: Triggers `removeGroupParticipant()` calling `DELETE /conversations/{id}/participants/{userId}`.
-5. **Rename Group**: Triggers `renameGroup()` calling `PATCH /conversations/{id}`.
-6. **Real-time Synchronization**: All group mutations return the complete updated group payload, which is pushed to all participants via `conversation:updated` socket event.
+1. **Creation**: `CreateGroupDialog` submits name and `participantIds` array to `apiRoute.conversations.group` (`POST /conversations/group`). Creator is automatically assigned admin rights.
+2. **Add Members**: Admin opens `AddMembersDialog` calling `apiRoute.conversations.participants(id)` (`POST /conversations/{id}/participants`) with `{ userIds }`.
+3. **Promote Admin**: Admin triggers `promoteGroupAdmin()` calling `apiRoute.conversations.admins(id)` (`POST /conversations/{id}/admins`).
+4. **Remove Member / Leave Group**: Triggers `removeGroupParticipant()` calling `apiRoute.conversations.participant(id, userId)` (`DELETE /conversations/{id}/participants/{userId}`).
+5. **Rename Group**: Triggers `renameGroup()` calling `apiRoute.conversations.detail(id)` (`PATCH /conversations/{id}`).
+6. **Real-time Synchronization**: All group mutations return the complete updated group payload, which is pushed to all participants via `conversation:updated` socket event and re-sorted to the top of the conversation list.
 
 ### Message Sending & Real-time Delivery
 1. **User Action**: User types a message in `ChatFeed` and hits enter or click send.
 2. **Optimistic Rendering**: Message appears immediately with a pending state indicator.
-3. **REST Dispatch**: `POST /messages` sends `{ conversationId, text }` to server.
-4. **Socket Reception**: Receiving client receives `message:new` event and merges the message smoothly into TanStack Query cache.
+3. **REST Dispatch**: `apiRoute.messages.send` (`POST /messages`) sends `{ conversationId, text }` to server.
+4. **Socket Reception**: Receiving client receives `message:new` event, updates message history cache, and re-orders conversation list via `updateConversationsList`.
 5. **Auto Scroll**: `ChatFeed` smoothly auto-scrolls to the bottom upon receipt of new messages.
 
 ---
