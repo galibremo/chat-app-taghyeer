@@ -4,9 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import {
   Check,
-  Info,
   Sparkles,
-  MessageSquare,
   HelpCircle,
   ArrowRight,
 } from "./icons";

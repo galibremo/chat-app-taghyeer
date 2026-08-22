@@ -16,6 +16,22 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+function MockHeader({ path }: { path: string }) {
+  return (
+    <div className="bg-muted/70 px-4 py-2.5 border-b border-border flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+        <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+        <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+      </div>
+      <div className="text-[11px] font-mono text-muted-foreground bg-background/60 px-3 py-1 rounded-full border border-border">
+        {path}
+      </div>
+      <div className="w-12" />
+    </div>
+  );
+}
+
 export default function MockDashboard() {
   const [activeTab, setActiveTab] = useState<"all" | "direct" | "group">("all");
   const [selectedChatId, setSelectedChatId] = useState("conv-1");
@@ -120,20 +136,6 @@ export default function MockDashboard() {
     mockConversations[0];
   const activeMessages = mockMessages[selectedChatId] || [];
 
-  // Helper component for top browser header
-  const MockHeader = ({ path }: { path: string }) => (
-    <div className="bg-muted/70 px-4 py-2.5 border-b border-border flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-        <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-        <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-      </div>
-      <div className="text-[11px] font-mono text-muted-foreground bg-background/60 px-3 py-1 rounded-full border border-border">
-        {path}
-      </div>
-      <div className="w-12" />
-    </div>
-  );
 
   // Content renderers for reusability across mobile stack and desktop row
   const renderSidebarContent = () => (

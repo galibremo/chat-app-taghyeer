@@ -166,7 +166,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
-    setSocket(socketInstance);
+    queueMicrotask(() => {
+      setSocket(socketInstance);
+    });
 
     return () => {
       socketInstance.off("connect");

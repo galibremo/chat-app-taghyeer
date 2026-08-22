@@ -216,8 +216,8 @@ export function useSendMessageMutation() {
   });
 }
 
-function useUpdateGroupMutation(
-  mutationFn: (args: any) => Promise<RawConversation>,
+function useUpdateGroupMutation<T>(
+  mutationFn: (args: T) => Promise<RawConversation>,
 ) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -237,25 +237,28 @@ function useUpdateGroupMutation(
 }
 
 export function useAddGroupParticipantsMutation() {
-  return useUpdateGroupMutation(({ conversationId, userIds }) =>
-    addGroupParticipants(conversationId, userIds),
+  return useUpdateGroupMutation<{ conversationId: string; userIds: string[] }>(
+    ({ conversationId, userIds }) =>
+      addGroupParticipants(conversationId, userIds),
   );
 }
 
 export function useRemoveGroupParticipantMutation() {
-  return useUpdateGroupMutation(({ conversationId, userId }) =>
-    removeGroupParticipant(conversationId, userId),
+  return useUpdateGroupMutation<{ conversationId: string; userId: string }>(
+    ({ conversationId, userId }) =>
+      removeGroupParticipant(conversationId, userId),
   );
 }
 
 export function usePromoteAdminMutation() {
-  return useUpdateGroupMutation(({ conversationId, userId }) =>
-    promoteGroupAdmin(conversationId, userId),
+  return useUpdateGroupMutation<{ conversationId: string; userId: string }>(
+    ({ conversationId, userId }) =>
+      promoteGroupAdmin(conversationId, userId),
   );
 }
 
 export function useRenameGroupMutation() {
-  return useUpdateGroupMutation(({ conversationId, name }) =>
-    renameGroup(conversationId, name),
+  return useUpdateGroupMutation<{ conversationId: string; name: string }>(
+    ({ conversationId, name }) => renameGroup(conversationId, name),
   );
 }

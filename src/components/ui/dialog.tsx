@@ -15,8 +15,12 @@ function Dialog({ isOpen, onClose, children, className }: DialogProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none"
+    >
       <div
+        onClick={(e) => e.stopPropagation()}
         className={cn(
           "w-full max-w-md rounded-2xl bg-card text-card-foreground border border-border p-6 shadow-xl space-y-4 animate-in zoom-in-95 duration-150 relative",
           className,

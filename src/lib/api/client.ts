@@ -85,27 +85,45 @@ export async function fetchClient<T = unknown>(
   });
 
   if (!response.ok) {
-    let errorData: any = {};
+    let errorData: {
+      message?: string;
+      code?: string;
+      error?: string | { message?: string; code?: string };
+      meta?: Record<string, unknown>;
+      timestamp?: string;
+      path?: string;
+      requestId?: string;
+    } = {};
     let errorMessage = "An error occurred while fetching data.";
     try {
       errorData = await response.clone().json();
-      errorMessage = errorData.message || errorData.error?.message || errorMessage;
+      const rawError = errorData.error;
+      const errorMsgFromObj = typeof rawError === "object" ? rawError?.message : undefined;
+      errorMessage = errorData.message || (typeof rawError === "string" ? rawError : errorMsgFromObj) || errorMessage;
     } catch {
       // Ignore JSON parse error on error response
     }
+
+    const rawError = errorData.error;
+    const errorStr =
+      typeof rawError === "string"
+        ? rawError
+        : typeof rawError === "object" && rawError?.message
+          ? rawError.message
+          : undefined;
 
     const payload: ApiErrorPayload = {
       statusCode: response.status,
       code:
         errorData.code ||
-        errorData.error?.code ||
+        (typeof rawError === "object" ? rawError?.code : undefined) ||
         (response.status === 401
           ? "unauthorized"
           : response.status === 403
             ? "forbidden"
             : "unknown_error"),
       message: errorMessage,
-      error: errorData.error,
+      error: errorStr,
       meta: errorData.meta,
       timestamp: errorData.timestamp,
       path: errorData.path,

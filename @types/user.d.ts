@@ -6,5 +6,5 @@ interface AuthUser {
   updatedAt?: string;
 }
 
-interface User extends AuthUser {}
+type User = AuthUser;
 

@@ -42,7 +42,7 @@ export function ChatFeed({
   const { data, isLoading } = useMessagesQuery(conversationId);
   const sendMessageMutation = useSendMessageMutation();
 
-  const messages = data?.messages || [];
+  const messages = React.useMemo(() => data?.messages || [], [data?.messages]);
 
   // Map participant IDs to names for displaying senders in group chat
   const participantMap = React.useMemo(() => {

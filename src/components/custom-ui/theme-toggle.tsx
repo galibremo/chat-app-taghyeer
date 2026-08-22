@@ -59,7 +59,10 @@ export default function ThemeToggle({
         : ComputerSettingsIcon;
 
   const effectiveVariant =
-    buttonVariant || (variant === "colored" ? "ghost" : (variant as any));
+    buttonVariant ||
+    (variant === "colored"
+      ? "ghost"
+      : (variant as ThemeToggleProps["buttonVariant"]));
 
   return (
     <Button

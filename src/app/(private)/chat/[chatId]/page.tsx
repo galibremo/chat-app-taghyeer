@@ -12,7 +12,7 @@ export default function ChatRoomPage() {
   const params = useParams();
   const chatId = typeof params?.chatId === "string" ? params.chatId : "";
 
-  const { data: conversations = [], isLoading } = useConversationsQuery();
+  const { data: conversations = [] } = useConversationsQuery();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
 

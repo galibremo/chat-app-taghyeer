@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "./icons";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,21 +80,21 @@ export default function Navbar() {
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              className="cursor-pointer"
-              onClick={() => (window.location.href = "/login")}
+            <Link
+              href="/login"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "cursor-pointer")}
             >
               Sign In
-            </Button>
-            <Button
-              size="sm"
-              className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => (window.location.href = "/chat")}
+            </Link>
+            <Link
+              href="/chat"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90",
+              )}
             >
               Start Chatting →
-            </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button & ThemeToggle */}

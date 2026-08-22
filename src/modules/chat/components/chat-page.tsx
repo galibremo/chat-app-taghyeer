@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { useConversationsQuery } from "../actions/chat.mutations";
 import { ChatSidebar } from "./chat-sidebar";
@@ -21,22 +21,18 @@ export function ChatPage() {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
 
-  // Auto-select first conversation on initial load if none selected
-  useEffect(() => {
-    if (!activeConversationId && conversations.length > 0) {
-      setActiveConversationId(conversations[0]._id);
-    }
-  }, [conversations, activeConversationId]);
+  const effectiveConversationId =
+    activeConversationId ?? conversations[0]?._id ?? null;
 
   const activeConversation =
-    conversations.find((c) => c._id === activeConversationId) || null;
+    conversations.find((c) => c._id === effectiveConversationId) || null;
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
       {/* Left Sidebar */}
       <ChatSidebar
         conversations={conversations}
-        activeConversationId={activeConversationId}
+        activeConversationId={effectiveConversationId}
         onSelectConversation={(id) => setActiveConversationId(id)}
         onOpenNewChat={() => setIsNewChatOpen(true)}
         onOpenCreateGroup={() => setIsCreateGroupOpen(true)}

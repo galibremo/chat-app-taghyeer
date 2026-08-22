@@ -42,6 +42,7 @@ export function CreateGroupDialog({
       setSelectedUsers(selectedUsers.filter((u) => u._id !== user._id));
     } else {
       setSelectedUsers([...selectedUsers, user]);
+      setSearchTerm("");
     }
   };
 

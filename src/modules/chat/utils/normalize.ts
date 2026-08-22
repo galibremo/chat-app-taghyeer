@@ -37,7 +37,14 @@ export function normalizeMessage(
   return {
     _id,
     conversation: raw.conversation,
-    sender: typeof raw.sender === "string" ? raw.sender : (raw.sender as any)?._id || "",
+    sender: (() => {
+      const senderVal = raw.sender as unknown;
+      if (typeof senderVal === "string") return senderVal;
+      if (typeof senderVal === "object" && senderVal !== null && "_id" in senderVal) {
+        return String((senderVal as { _id: unknown })._id);
+      }
+      return "";
+    })(),
     text: raw.text || "",
     createdAt: createdAtIso,
     status: "sent",
