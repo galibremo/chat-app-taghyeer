@@ -67,7 +67,7 @@ export function ChatSidebar({
   return (
     <div className="w-full md:w-80 lg:w-96 flex flex-col h-full bg-background border-r border-border select-none">
       {/* Header Profile Bar */}
-      <div className="p-4 border-b border-border flex items-center justify-between bg-card text-card-foreground">
+      <div className="p-3.5 border-b border-border flex items-center justify-between bg-card text-card-foreground">
         <div className="flex items-center gap-3">
           <div className="relative">
             <Avatar size="md" className="bg-primary text-primary-foreground">
@@ -114,7 +114,9 @@ export function ChatSidebar({
                     : "Offline"}
               </span>
               <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground truncate">{user?.phone}</span>
+              <span className="text-muted-foreground truncate">
+                {user?.phone}
+              </span>
             </div>
           </div>
         </div>
@@ -229,13 +231,19 @@ export function ChatSidebar({
               {/* Conversation Avatar */}
               <div className="relative shrink-0">
                 {isGroup ? (
-                  <Avatar size="lg" className="bg-primary text-primary-foreground">
+                  <Avatar
+                    size="lg"
+                    className="bg-primary text-primary-foreground"
+                  >
                     <AvatarFallback className="text-primary-foreground">
                       <UserGroupIcon className="w-5 h-5 text-primary-foreground" />
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  <Avatar size="lg" className="bg-secondary text-secondary-foreground">
+                  <Avatar
+                    size="lg"
+                    className="bg-secondary text-secondary-foreground"
+                  >
                     <AvatarFallback className="text-secondary-foreground">
                       {conv.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -268,7 +276,10 @@ export function ChatSidebar({
                   </p>
 
                   {isGroup && (
-                    <Badge variant="secondary" className="px-1.5 py-0.2 text-[9px] shrink-0">
+                    <Badge
+                      variant="secondary"
+                      className="px-1.5 py-0.2 text-[9px] shrink-0"
+                    >
                       Group
                     </Badge>
                   )}

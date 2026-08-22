@@ -101,7 +101,7 @@ export function ChatFeed({
   return (
     <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden select-none">
       {/* Header */}
-      <div className="p-3.5 px-6 border-b border-border flex items-center justify-between bg-card text-card-foreground backdrop-blur-md z-10">
+      <div className="p-3.5 border-b border-border flex items-center justify-between bg-card text-card-foreground backdrop-blur-md z-10">
         <div className="flex items-center gap-3">
           {conversation.type === "group" ? (
             <Avatar size="md" className="bg-primary text-primary-foreground">
@@ -110,7 +110,10 @@ export function ChatFeed({
               </AvatarFallback>
             </Avatar>
           ) : (
-            <Avatar size="md" className="bg-secondary text-secondary-foreground">
+            <Avatar
+              size="md"
+              className="bg-secondary text-secondary-foreground"
+            >
               <AvatarFallback className="text-secondary-foreground">
                 {conversation.name.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -170,7 +173,7 @@ export function ChatFeed({
             return (
               <div key={msg._id} className="flex flex-col items-end space-y-1">
                 {/* Outgoing Message Bubble (Text Only) */}
-                <div className="max-w-[75%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed wrap-break-word shadow-xs bg-primary text-primary-foreground rounded-br-xs">
+                <div className="max-w-[75%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap break-words shadow-xs bg-primary text-primary-foreground rounded-br-xs">
                   {msg.text}
                 </div>
 
@@ -212,7 +215,7 @@ export function ChatFeed({
 
               <div className="flex flex-col items-start space-y-1">
                 {/* Incoming Message Bubble (Text Only) */}
-                <div className="px-4 py-2.5 rounded-2xl text-xs leading-relaxed wrap-break-word shadow-xs bg-muted border border-border text-muted-foreground rounded-bl-xs">
+                <div className="px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap break-words shadow-xs bg-muted border border-border text-muted-foreground rounded-bl-xs">
                   {msg.text}
                 </div>
 
@@ -235,8 +238,8 @@ export function ChatFeed({
           className="flex items-end rounded-2xl bg-card border border-border p-2 pl-4 transition-all focus-within:ring-1 focus-within:ring-ring"
         >
           <TextareaAutosize
-            minRows={1}
-            maxRows={5}
+            minRows={2}
+            maxRows={4}
             placeholder={`Message ${conversation.name}...`}
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
@@ -249,9 +252,9 @@ export function ChatFeed({
             disabled={!messageText.trim()}
             title="Send message"
             size="icon"
-            className="cursor-pointer w-8 h-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 shadow-xs transition-all active:scale-95 shrink-0 mb-0.5"
+            className="cursor-pointer w-7 h-7 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 shadow-xs transition-all active:scale-95 shrink-0 mb-0.5"
           >
-            <SentIcon className="w-4 h-4 translate-x-0.5" />
+            <SentIcon className="w-3.5! h-3.5!" />
           </Button>
         </form>
       </div>

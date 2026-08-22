@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "motion/react";
 import {
   Cancel01Icon,
   PencilEdit01Icon,
@@ -134,9 +135,16 @@ export function ChatDetailsPanel({
 
   return (
     <>
-      <div className="w-full md:w-80 lg:w-96 flex flex-col h-full bg-background border-l border-border animate-in slide-in-from-right duration-200 select-none">
+      <motion.div
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ width: "auto", opacity: 1 }}
+        exit={{ width: 0, opacity: 0 }}
+        transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+        className="h-full overflow-hidden shrink-0 select-none border-l border-border bg-background"
+      >
+        <div className="w-80 lg:w-96 flex flex-col h-full shrink-0">
         {/* Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between bg-card text-card-foreground">
+        <div className="p-3.5 py-5 border-b border-border flex items-center justify-between bg-card text-card-foreground">
           <h3 className="text-sm font-semibold text-foreground">
             {isGroup ? "Group Details" : "Contact Details"}
           </h3>
@@ -154,13 +162,19 @@ export function ChatDetailsPanel({
           {/* Avatar & Title Section */}
           <div className="text-center space-y-3">
             {isGroup ? (
-              <Avatar size="xl" className="mx-auto bg-primary text-primary-foreground">
+              <Avatar
+                size="xl"
+                className="mx-auto bg-primary text-primary-foreground"
+              >
                 <AvatarFallback className="text-primary-foreground">
                   <UserGroupIcon className="w-9 h-9 text-primary-foreground" />
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <Avatar size="xl" className="mx-auto bg-secondary text-secondary-foreground">
+              <Avatar
+                size="xl"
+                className="mx-auto bg-secondary text-secondary-foreground"
+              >
                 <AvatarFallback className="text-secondary-foreground">
                   {conversation.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -251,7 +265,10 @@ export function ChatDetailsPanel({
                       className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border hover:bg-accent/40 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <Avatar size="sm" className="bg-secondary text-secondary-foreground">
+                        <Avatar
+                          size="sm"
+                          className="bg-secondary text-secondary-foreground"
+                        >
                           <AvatarFallback className="text-secondary-foreground">
                             {m.name ? m.name.charAt(0).toUpperCase() : "?"}
                           </AvatarFallback>
@@ -272,9 +289,7 @@ export function ChatDetailsPanel({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {isMemberAdmin && (
-                          <Badge variant="admin">Admin</Badge>
-                        )}
+                        {isMemberAdmin && <Badge variant="admin">Admin</Badge>}
 
                         {isAdmin && !isSelf && (
                           <div className="flex items-center gap-1">
@@ -326,13 +341,12 @@ export function ChatDetailsPanel({
           )}
         </div>
       </div>
+    </motion.div>
 
       {/* Confirmation Alert Dialog */}
       <AlertDialog
         isOpen={confirmDialog.isOpen}
-        onClose={() =>
-          setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
-        }
+        onClose={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
         onConfirm={confirmDialog.onConfirm}
         title={confirmDialog.title}
         description={confirmDialog.description}

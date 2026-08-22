@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { useConversationsQuery } from "../actions/chat.mutations";
 import { ChatSidebar } from "./chat-sidebar";
 import { ChatFeed } from "./chat-feed";
@@ -31,7 +32,7 @@ export function ChatPage() {
     conversations.find((c) => c._id === activeConversationId) || null;
 
   return (
-    <div className="flex h-screen w-full bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
       {/* Left Sidebar */}
       <ChatSidebar
         conversations={conversations}
@@ -50,13 +51,16 @@ export function ChatPage() {
       />
 
       {/* Right Details Panel */}
-      {isDetailsOpen && activeConversation && (
-        <ChatDetailsPanel
-          conversation={activeConversation}
-          onClose={() => setIsDetailsOpen(false)}
-          onOpenAddMembers={() => setIsAddMembersOpen(true)}
-        />
-      )}
+      <AnimatePresence>
+        {isDetailsOpen && activeConversation && (
+          <ChatDetailsPanel
+            key={activeConversation._id}
+            conversation={activeConversation}
+            onClose={() => setIsDetailsOpen(false)}
+            onOpenAddMembers={() => setIsAddMembersOpen(true)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Dialogs directly in components */}
       <NewChatDialog

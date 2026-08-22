@@ -5,6 +5,7 @@ import QueryProvider from "@/providers/query-provider";
 import { cn } from "@/lib/utils";
 import AuthProvider from "@/providers/auth-provider";
 import { getSessionUser } from "@/lib/services";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -42,7 +43,9 @@ export default async function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AuthProvider user={user}>
-          <QueryProvider>{children}</QueryProvider>
+          <ThemeProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
