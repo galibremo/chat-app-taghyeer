@@ -1,13 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import {
-  ArrowRight,
-  Sparkles,
-  MessageCircle,
-  ShieldCheck,
-  Zap,
-} from "./icons";
+import { ArrowRight, Sparkles, MessageCircle, ShieldCheck, Zap } from "./icons";
 import MockDashboard from "./mock-dashboard";
 
 export default function Hero() {
@@ -54,7 +48,9 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl"
           >
-            Experience lightning-fast Socket.io communication, optimistic message updates, admin group management, and edge-protected authentication.
+            Experience lightning-fast Socket.io communication, optimistic
+            message updates, admin group management, and edge-protected
+            authentication.
           </motion.p>
 
           {/* Primary Action Buttons */}
@@ -113,7 +109,7 @@ export default function Hero() {
             type: "spring",
             stiffness: 50,
           }}
-          className="mt-14 md:mt-16 max-w-5xl mx-auto shadow-2xl relative"
+          className="mt-14 md:mt-16 max-w-5xl mx-auto relative"
         >
           <MockDashboard />
         </motion.div>
