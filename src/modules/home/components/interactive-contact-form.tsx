@@ -8,7 +8,7 @@ import {
   LogIn,
   CheckCircle2,
   ArrowUpRight,
-} from "./icons";
+} from "@/components/custom-ui/icons";
 import Link from "next/link";
 
 export default function InteractiveContactForm() {

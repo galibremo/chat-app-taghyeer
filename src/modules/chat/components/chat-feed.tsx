@@ -187,7 +187,7 @@ export function ChatFeed({
             return (
               <div key={msg._id} className="flex flex-col items-end space-y-1">
                 {/* Outgoing Message Bubble (Text Only) */}
-                <div className="max-w-[75%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap break-words shadow-xs bg-primary text-primary-foreground rounded-br-xs">
+                <div className="max-w-[75%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap wrap-break-word shadow-xs bg-primary text-primary-foreground rounded-br-xs">
                   {msg.text}
                 </div>
 
@@ -229,7 +229,7 @@ export function ChatFeed({
 
               <div className="flex flex-col items-start space-y-1">
                 {/* Incoming Message Bubble (Text Only) */}
-                <div className="px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap break-words shadow-xs bg-muted border border-border text-muted-foreground rounded-bl-xs">
+                <div className="px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap wrap-break-word shadow-xs bg-muted border border-border text-muted-foreground rounded-bl-xs">
                   {msg.text}
                 </div>
 

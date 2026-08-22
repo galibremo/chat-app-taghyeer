@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   Sparkles,
   Send,
-} from "./icons";
+} from "@/components/custom-ui/icons";
 
 export default function BentoGrid() {
   const features = [

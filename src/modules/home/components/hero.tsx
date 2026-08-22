@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight, Sparkles, MessageCircle, ShieldCheck, Zap } from "./icons";
+import { ArrowRight, Sparkles, MessageCircle, ShieldCheck, Zap } from "@/components/custom-ui/icons";
 import MockDashboard from "./mock-dashboard";
 
 export default function Hero() {

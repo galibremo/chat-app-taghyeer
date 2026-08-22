@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Zap, ShieldCheck, MessageCircle, Sparkles } from "./icons";
+import { Zap, ShieldCheck, MessageCircle, Sparkles } from "@/components/custom-ui/icons";
 
 export default function TimelineRoadmap() {
   const steps = [

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown } from "./icons";
+import { ChevronDown } from "@/components/custom-ui/icons";
 
 export default function FAQAccordion() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);

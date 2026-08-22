@@ -1,0 +1,42 @@
+import React from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import * as HugeIcons from "@hugeicons/core-free-icons";
+
+export type IconProps = Omit<React.ComponentProps<typeof HugeiconsIcon>, "icon">;
+
+export const Menu = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Menu01Icon} {...props} />;
+export const X = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Cancel01Icon} {...props} />;
+export const ArrowUpRight = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.ArrowUpRight01Icon} {...props} />;
+export const CheckCircle2 = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Tick01Icon} {...props} />;
+export const CircleDot = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.CircleIcon} {...props} />;
+export const ArrowRight = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.ArrowRight01Icon} {...props} />;
+export const Bot = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.BotIcon || HugeIcons.CpuIcon} {...props} />;
+export const FileText = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.DocumentCodeIcon} {...props} />;
+export const CheckCircle = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Tick01Icon} {...props} />;
+export const Search = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Search01Icon} {...props} />;
+export const RefreshCw = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.RefreshIcon} {...props} />;
+export const ChevronDown = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.ArrowDown01Icon} {...props} />;
+export const HelpCircle = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.QuestionIcon} {...props} />;
+export const Zap = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.FlashIcon} {...props} />;
+export const Sparkles = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.SparklesIcon} {...props} />;
+export const MessageCircle = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Comment01Icon} {...props} />;
+export const ShieldCheck = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.ShieldIcon} {...props} />;
+export const Send = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.SentIcon} {...props} />;
+
+export const Check = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Tick01Icon} {...props} />;
+export const LogIn = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Login01Icon} {...props} />;
+export const MessageSquareText = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Comment01Icon} {...props} />;
+export const GitBranch = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.CodeIcon} {...props} />;
+export const Users = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.UserMultipleIcon} {...props} />;
+export const UserCheck = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.UserCheck01Icon || HugeIcons.Tick01Icon} {...props} />;
+export const BarChart3 = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Chart01Icon} {...props} />;
+export const Clock = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Clock01Icon} {...props} />;
+export const Smile = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.SmileIcon} {...props} />;
+export const Play = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.PlayIcon} {...props} />;
+export const MessageCircleHeart = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.HeartIcon || HugeIcons.Comment01Icon} {...props} />;
+export const Info = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.InformationCircleIcon} {...props} />;
+export const MessageSquare = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Comment01Icon} {...props} />;
+export const Shield = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Shield01Icon || HugeIcons.ShieldIcon} {...props} />;
+export const Mail = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Mail01Icon} {...props} />;
+export const Globe = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Globe02Icon} {...props} />;
+export const MapPin = (props: IconProps) => <HugeiconsIcon icon={HugeIcons.Location01Icon} {...props} />;

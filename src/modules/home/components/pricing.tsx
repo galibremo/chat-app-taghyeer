@@ -7,7 +7,7 @@ import {
   Sparkles,
   HelpCircle,
   ArrowRight,
-} from "./icons";
+} from "@/components/custom-ui/icons";
 import { PricingTier } from "@/types/types";
 import { PRICING_TIERS } from "@/dummy/data";
 
