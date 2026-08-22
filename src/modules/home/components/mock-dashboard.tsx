@@ -1,229 +1,388 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import {
-  Users,
-  BarChart3,
-  Mail,
-  Clock,
-  Zap,
-  Search,
-  FileText,
-} from "./icons";
-import { USERS_MOCK, DashboardUser } from "@/dummy/data";
+  SentIcon,
+  InformationCircleIcon,
+  UserGroupIcon,
+  CheckmarkBadge01Icon,
+  Search01Icon,
+  Add01Icon,
+  Logout01Icon,
+  Cancel01Icon,
+  UserAdd01Icon,
+} from "hugeicons-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function MockDashboard() {
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState<"all" | "direct" | "group">("all");
+  const [selectedChatId, setSelectedChatId] = useState("conv-1");
+  const [isDetailsOpen, setIsDetailsOpen] = useState(true);
 
-  const sidebarLinks = [
-    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { id: "users", label: "Users", icon: Users },
-    { id: "emails", label: "Email Templates", icon: Mail },
-    { id: "sessions", label: "Sessions", icon: Clock },
-    { id: "settings", label: "Settings", icon: Zap },
+  // Realistic mock dataset for the interactive landing page demo
+  const mockConversations = [
+    {
+      id: "conv-1",
+      name: "Product Design Squad",
+      type: "group",
+      unread: 2,
+      lastMsg: "Sarah: The new Shadcn theme components look clean! 🚀",
+      time: "10:42 AM",
+      participantsCount: 5,
+    },
+    {
+      id: "conv-2",
+      name: "Galib Remo",
+      type: "direct",
+      unread: 0,
+      lastMsg: "Let me check the Socket.io connection fallback.",
+      time: "Yesterday",
+      phone: "+880 1744 123456",
+    },
+    {
+      id: "conv-3",
+      name: "Frontend Core Team",
+      type: "group",
+      unread: 0,
+      lastMsg: "Alex: Next.js 16 build passed with 0 errors.",
+      time: "Aug 20",
+      participantsCount: 8,
+    },
   ];
 
+  const mockMessages: Record<
+    string,
+    Array<{
+      id: string;
+      sender: string;
+      isOwn: boolean;
+      text: string;
+      time: string;
+      status?: "sent" | "pending";
+    }>
+  > = {
+    "conv-1": [
+      {
+        id: "m1",
+        sender: "Alex Rivers",
+        isOwn: false,
+        text: "Hey team! I just finished updating the design system to use standard Shadcn tokens.",
+        time: "10:38 AM",
+      },
+      {
+        id: "m2",
+        sender: "Galib",
+        isOwn: true,
+        text: "That's awesome! Did you replace all hardcoded color classes?",
+        time: "10:40 AM",
+        status: "sent",
+      },
+      {
+        id: "m3",
+        sender: "Sarah Jenkins",
+        isOwn: false,
+        text: "The new Shadcn theme components look clean! 🚀",
+        time: "10:42 AM",
+      },
+    ],
+    "conv-2": [
+      {
+        id: "m10",
+        sender: "Galib Remo",
+        isOwn: false,
+        text: "Hey! Is the real-time websocket connection working on mobile?",
+        time: "Yesterday",
+      },
+      {
+        id: "m11",
+        sender: "You",
+        isOwn: true,
+        text: "Let me check the Socket.io connection fallback.",
+        time: "Yesterday",
+        status: "sent",
+      },
+    ],
+    "conv-3": [
+      {
+        id: "m20",
+        sender: "Alex Rivers",
+        isOwn: false,
+        text: "Next.js 16 build passed with 0 errors.",
+        time: "Aug 20",
+      },
+    ],
+  };
+
+  const selectedConv = mockConversations.find((c) => c.id === selectedChatId) || mockConversations[0];
+  const activeMessages = mockMessages[selectedChatId] || [];
+
   return (
-    <div className="relative w-full max-w-6xl mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-obsidian-950 flex flex-col md:flex-row h-150 font-sans">
-
-      {/* Sidebar */}
-      <div className="w-full md:w-64 bg-obsidian-900 border-r border-white/5 flex flex-col shrink-0">
-        <div className="p-4 flex items-center gap-2 border-b border-white/5">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-display font-bold text-white text-lg">
-            SaaS Boilerplate
-          </span>
+    <div className="w-full rounded-2xl bg-card border border-border shadow-2xl overflow-hidden select-none text-foreground font-sans">
+      {/* Mock Browser Title Bar */}
+      <div className="bg-muted/70 px-4 py-2.5 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+          <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+          <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
         </div>
-
-        <div className="p-3 flex-1 overflow-y-auto space-y-1">
-          <div className="text-xs font-semibold text-gray-500 mb-2 px-3 uppercase tracking-wider">
-            Menu
-          </div>
-          {sidebarLinks.map((link) => {
-            const isActive = activeTab === link.id;
-            const Icon = link.icon;
-            return (
-              <button
-                key={link.id}
-                onClick={() => setActiveTab(link.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
-                  ? "bg-white/10 text-white shadow-sm"
-                  : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                  }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-primary" : ""}`} />
-                {link.label}
-              </button>
-            );
-          })}
+        <div className="text-[11px] font-mono text-muted-foreground bg-background/60 px-3 py-1 rounded-full border border-border">
+          https://chatflow.app/chat
         </div>
-
-        <div className="p-4 border-t border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-brand-primary p-px">
-              <img
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt="User"
-                className="w-full h-full rounded-full object-cover border border-obsidian-950"
-              />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-sm font-semibold text-gray-200">
-                Admin User
-              </span>
-              <span className="text-xs text-gray-500">Pro Plan</span>
-            </div>
-          </div>
-        </div>
+        <div className="w-12" />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-obsidian-950">
-        {/* Top Header */}
-        <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-obsidian-900/50">
-          <h2 className="font-display font-semibold text-lg text-white capitalize">
-            {activeTab} Management
-          </h2>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      {/* 3-Panel Chat Interface */}
+      <div className="flex h-[480px] md:h-[540px] overflow-hidden">
+        {/* Left Sidebar Mock */}
+        <div className="w-64 md:w-72 bg-background border-r border-border flex flex-col shrink-0">
+          {/* User Profile Bar */}
+          <div className="p-3 border-b border-border flex items-center justify-between bg-card">
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <Avatar size="sm" className="bg-primary text-primary-foreground">
+                  <AvatarFallback className="text-primary-foreground font-bold">
+                    Y
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-background" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold truncate">You (Logged In)</div>
+                <div className="text-[10px] text-emerald-500 font-medium">Online</div>
+              </div>
+            </div>
+            <Logout01Icon className="w-4 h-4 text-muted-foreground" />
+          </div>
+
+          {/* Action buttons & Search */}
+          <div className="p-2.5 space-y-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <Button size="xs" className="bg-primary text-primary-foreground text-[10px] gap-1">
+                <Add01Icon className="w-3 h-3" />
+                <span>Direct</span>
+              </Button>
+              <Button size="xs" variant="secondary" className="text-[10px] gap-1">
+                <UserGroupIcon className="w-3 h-3" />
+                <span>Group</span>
+              </Button>
+            </div>
+
+            <div className="relative flex items-center">
+              <Search01Icon className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5" />
               <input
                 type="text"
-                placeholder="Search..."
-                className="bg-obsidian-800 border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-primary/50 w-64 transition-colors"
                 readOnly
+                placeholder="Search..."
+                className="w-full bg-background border border-input rounded-xl pl-8 pr-2 py-1 text-[11px] text-foreground focus:outline-none"
               />
             </div>
-            <button className="bg-primary hover:bg-primary text-obsidian-950 px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors">
-              Add New
-            </button>
+
+            {/* Filter Tabs */}
+            <div className="flex bg-muted/60 p-0.5 rounded-lg text-[10px] font-medium text-muted-foreground">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`flex-1 py-0.5 rounded ${
+                  activeTab === "all" ? "bg-background text-foreground shadow-xs" : ""
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setActiveTab("direct")}
+                className={`flex-1 py-0.5 rounded ${
+                  activeTab === "direct" ? "bg-background text-foreground shadow-xs" : ""
+                }`}
+              >
+                Direct
+              </button>
+              <button
+                onClick={() => setActiveTab("group")}
+                className={`flex-1 py-0.5 rounded ${
+                  activeTab === "group" ? "bg-background text-foreground shadow-xs" : ""
+                }`}
+              >
+                Groups
+              </button>
+            </div>
+          </div>
+
+          {/* Conversations List */}
+          <div className="flex-1 overflow-y-auto px-1.5 space-y-1">
+            {mockConversations
+              .filter((c) => activeTab === "all" || c.type === activeTab)
+              .map((conv) => {
+                const isActive = conv.id === selectedChatId;
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => setSelectedChatId(conv.id)}
+                    className={`w-full p-2 rounded-xl flex items-center gap-2 text-left transition-all border ${
+                      isActive
+                        ? "bg-accent text-accent-foreground border-border font-medium"
+                        : "bg-transparent hover:bg-accent/40 text-foreground border-transparent"
+                    }`}
+                  >
+                    <Avatar size="sm" className={conv.type === "group" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}>
+                      <AvatarFallback className="text-xs">
+                        {conv.type === "group" ? <UserGroupIcon className="w-3.5 h-3.5" /> : conv.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="text-[11px] font-bold truncate">{conv.name}</span>
+                        <span className="text-[9px] text-muted-foreground">{conv.time}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground truncate">{conv.lastMsg}</p>
+                    </div>
+                  </button>
+                );
+              })}
           </div>
         </div>
 
-        {/* Dashboard Content */}
-        <div className="p-6 overflow-y-auto flex-1">
-          {activeTab === "users" ? (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key="users-view"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    { label: "Total Users", value: "2,543", trend: "+12.5%" },
-                    { label: "Active Sessions", value: "842", trend: "+5.2%" },
-                    { label: "MRR", value: "$12,450", trend: "+18.1%" },
-                  ].map((stat, i) => (
-                    <div
-                      key={i}
-                      className="bg-obsidian-900 border border-white/5 rounded-xl p-4 flex flex-col gap-2"
-                    >
-                      <span className="text-sm font-medium text-gray-400">
-                        {stat.label}
-                      </span>
-                      <div className="flex items-baseline gap-3">
-                        <span className="text-2xl font-bold text-white">
-                          {stat.value}
-                        </span>
-                        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                          {stat.trend}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Users Table */}
-                <div className="bg-obsidian-900 border border-white/5 rounded-xl overflow-hidden">
-                  <div className="px-5 py-4 border-b border-white/5">
-                    <h3 className="font-semibold text-white">Recent Users</h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm whitespace-nowrap">
-                      <thead className="bg-obsidian-800/50 text-gray-400">
-                        <tr>
-                          <th className="px-5 py-3 font-medium">User</th>
-                          <th className="px-5 py-3 font-medium">Plan</th>
-                          <th className="px-5 py-3 font-medium">Status</th>
-                          <th className="px-5 py-3 font-medium">Joined</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-gray-300">
-                        {USERS_MOCK.map((user: DashboardUser) => (
-                          <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                            <td className="px-5 py-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-brand-primary/20 flex items-center justify-center text-brand-primary font-bold text-xs">
-                                  {user.name.charAt(0)}
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-gray-200">
-                                    {user.name}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {user.email}
-                                  </span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-5 py-3">
-                              <span className="inline-flex items-center gap-1.5 border border-white/10 bg-white/5 px-2.5 py-1 rounded-md text-xs font-medium text-gray-300">
-                                {user.plan === "Enterprise" && <Zap className="w-3 h-3 text-amber-400" />}
-                                {user.plan}
-                              </span>
-                            </td>
-                            <td className="px-5 py-3">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className={`w-2 h-2 rounded-full ${user.status === "Active"
-                                    ? "bg-primary shadow-[0_0_8px_rgba(52,211,153,0.5)]"
-                                    : "bg-gray-500"
-                                    }`}
-                                />
-                                <span>{user.status}</span>
-                              </div>
-                            </td>
-                            <td className="px-5 py-3 text-gray-400">
-                              {user.joinedAt}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-obsidian-800 border border-white/10 flex items-center justify-center text-gray-400">
-                <FileText className="w-8 h-8" />
-              </div>
+        {/* Center Feed Mock */}
+        <div className="flex-1 flex flex-col bg-background relative overflow-hidden">
+          {/* Header */}
+          <div className="p-3 border-b border-border flex items-center justify-between bg-card">
+            <div className="flex items-center gap-2.5">
+              <Avatar size="sm" className={selectedConv.type === "group" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}>
+                <AvatarFallback className="text-xs">
+                  {selectedConv.type === "group" ? <UserGroupIcon className="w-3.5 h-3.5" /> : selectedConv.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Module
-                </h3>
-                <p className="text-gray-400 text-sm max-w-sm mx-auto">
-                  This section is fully functional in the boilerplate codebase. Switch back to Users to see the data table in action.
+                <h4 className="text-xs font-bold">{selectedConv.name}</h4>
+                <p className="text-[10px] text-muted-foreground">
+                  {selectedConv.type === "group" ? `${selectedConv.participantsCount} members` : selectedConv.phone}
                 </p>
               </div>
-              <button
-                onClick={() => setActiveTab("users")}
-                className="mt-4 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-              >
-                Return to Users
-              </button>
             </div>
-          )}
+
+            <Button
+              size="xs"
+              variant={isDetailsOpen ? "secondary" : "outline"}
+              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+              className="text-[10px] gap-1 cursor-pointer"
+            >
+              <InformationCircleIcon className="w-3.5 h-3.5" />
+              <span>Details</span>
+            </Button>
+          </div>
+
+          {/* Feed Scroll */}
+          <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3">
+            {activeMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.isOwn ? "justify-end" : "justify-start gap-2"}`}
+              >
+                {!msg.isOwn && (
+                  <Avatar size="sm" className="bg-secondary text-secondary-foreground shrink-0 mt-0.5">
+                    <AvatarFallback className="text-[10px]">
+                      {msg.sender.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+
+                <div className={`flex flex-col ${msg.isOwn ? "items-end" : "items-start"} space-y-1`}>
+                  <div
+                    className={`max-w-[80%] px-3.5 py-2 rounded-2xl text-[11px] leading-relaxed whitespace-pre-wrap break-words shadow-xs ${
+                      msg.isOwn
+                        ? "bg-primary text-primary-foreground rounded-br-xs"
+                        : "bg-muted border border-border text-muted-foreground rounded-bl-xs"
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+
+                  <div className="text-[9px] text-muted-foreground font-mono flex items-center gap-1 px-1">
+                    <span>{msg.time}</span>
+                    {msg.isOwn && <CheckmarkBadge01Icon className="w-3 h-3 text-primary" />}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input Bar */}
+          <div className="p-2.5 border-t border-border bg-card/50">
+            <div className="flex items-center rounded-xl bg-card border border-border p-1.5 pl-3">
+              <input
+                type="text"
+                readOnly
+                placeholder={`Message ${selectedConv.name}...`}
+                className="flex-1 bg-transparent text-[11px] text-foreground focus:outline-none"
+              />
+              <Button size="icon" className="w-7 h-7 rounded-full bg-primary text-primary-foreground shrink-0">
+                <SentIcon className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
         </div>
+
+        {/* Right Details Panel Mock (Desktop) */}
+        {isDetailsOpen && (
+          <div className="hidden lg:flex w-64 bg-background border-l border-border flex-col shrink-0">
+            <div className="p-3 border-b border-border flex items-center justify-between bg-card">
+              <h5 className="text-xs font-bold">Details</h5>
+              <Cancel01Icon
+                className="w-3.5 h-3.5 text-muted-foreground cursor-pointer"
+                onClick={() => setIsDetailsOpen(false)}
+              />
+            </div>
+
+            <div className="p-3 space-y-4 overflow-y-auto">
+              <div className="text-center space-y-2">
+                <Avatar size="lg" className="mx-auto bg-primary text-primary-foreground">
+                  <AvatarFallback>
+                    {selectedConv.type === "group" ? <UserGroupIcon className="w-5 h-5" /> : selectedConv.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h6 className="text-xs font-bold">{selectedConv.name}</h6>
+                  <p className="text-[10px] text-muted-foreground">
+                    {selectedConv.type === "group" ? `${selectedConv.participantsCount} Members` : "Direct Conversation"}
+                  </p>
+                </div>
+              </div>
+
+              {selectedConv.type === "group" && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-bold border-b border-border pb-1">
+                    <span>Members</span>
+                    <span className="text-primary text-[10px] flex items-center gap-0.5">
+                      <UserAdd01Icon className="w-3 h-3" /> Add
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-[11px]">
+                    <div className="flex items-center justify-between p-1.5 rounded-lg bg-card border border-border">
+                      <div className="flex items-center gap-2">
+                        <Avatar size="sm" className="bg-secondary text-secondary-foreground">
+                          <AvatarFallback className="text-[10px]">A</AvatarFallback>
+                        </Avatar>
+                        <span>Alex Rivers</span>
+                      </div>
+                      <Badge variant="admin">Admin</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-1.5 rounded-lg bg-card border border-border">
+                      <div className="flex items-center gap-2">
+                        <Avatar size="sm" className="bg-secondary text-secondary-foreground">
+                          <AvatarFallback className="text-[10px]">S</AvatarFallback>
+                        </Avatar>
+                        <span>Sarah Jenkins</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
