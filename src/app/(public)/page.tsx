@@ -5,6 +5,7 @@ import Hero from "@/modules/home/components/hero";
 import InteractiveContactForm from "@/modules/home/components/interactive-contact-form";
 import JsonLd from "@/modules/home/components/json-ld";
 import Navbar from "@/modules/home/components/navbar";
+import TimelineRoadmap from "@/modules/home/components/timeline-roadmap";
 
 export default function Landing() {
   return (
@@ -15,6 +16,7 @@ export default function Landing() {
         <main>
           <Hero />
           <BentoGrid />
+          <TimelineRoadmap />
           <FAQAccordion />
           <InteractiveContactForm />
         </main>

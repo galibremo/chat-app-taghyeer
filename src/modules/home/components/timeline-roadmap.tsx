@@ -1,176 +1,94 @@
 "use client";
 
-import { useState } from "react";
-
-import { CheckCircle2, CircleDot, ArrowRight } from "./icons";
-import { ROADMAP } from "@/dummy/data";
-import { RoadmapPhase } from "@/types/types";
+import { motion } from "motion/react";
+import { Zap, ShieldCheck, MessageCircle, Sparkles } from "./icons";
 
 export default function TimelineRoadmap() {
-  const [activeStageIdx, setActiveStageIdx] = useState<number>(0);
-
-  const getStatusIcon = (status: string) => {
-    return <CircleDot className="w-4 h-4 text-brand-primary" />;
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "Setup":
-        return "bg-primary/10 text-primary border-primary/20";
-      case "Development":
-        return "bg-primary/10 text-primary border-primary/20";
-      case "Production":
-        return "bg-blue-500/10 text-brand-blue border-blue-500/20";
-      default:
-        return "bg-gray-500/10 text-gray-200 border-gray-500/20";
-    }
-  };
+  const steps = [
+    {
+      step: "01",
+      title: "Secure Handshake & Authentication",
+      desc: "Client sends HTTP-only auth token via Edge proxy. Socket.io initiates handshake with fallback transport.",
+      icon: <ShieldCheck className="w-5 h-5 text-emerald-500" />,
+      badge: "Auth & Handshake",
+    },
+    {
+      step: "02",
+      title: "Optimistic Local Dispatch",
+      desc: "Message immediately renders in sender's chat feed with a pending spinner, ensuring zero perceived UI latency.",
+      icon: <Sparkles className="w-5 h-5 text-primary" />,
+      badge: "Optimistic UX",
+    },
+    {
+      step: "03",
+      title: "REST API Persistence & Socket Emission",
+      desc: "POST request persists message to MongoDB while backend broadcasts `message:new` event to all active room participants.",
+      icon: <Zap className="w-5 h-5 text-primary" />,
+      badge: "Real-Time Sync",
+    },
+    {
+      step: "04",
+      title: "Delivery Status & Cache Invalidation",
+      desc: "Pending loader transforms to verified checkmark ✓ and React Query updates thread state seamlessly.",
+      icon: <MessageCircle className="w-5 h-5 text-primary" />,
+      badge: "Verified Delivery",
+    },
+  ];
 
   return (
     <section
-      id="how-it-works"
-      aria-label="How It Works"
-      className="py-24 bg-obsidian-900 border-t border-white/5 relative"
+      id="architecture"
+      aria-label="Real-Time System Architecture"
+      className="py-20 md:py-28 bg-card border-t border-border"
     >
-      <div className="absolute top-[30%] left-10 w-75 h-75 bg-brand-primary/5 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-xs font-mono tracking-widest text-brand-primary uppercase bg-primary/5 border border-primary/10 px-3 py-1.5 rounded-full">
-            Getting Started
-          </span>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            How It Works
+          <h2 className="text-xs font-mono font-bold tracking-widest text-primary uppercase mb-3">
+            System Architecture
           </h2>
-          <p className="mt-4 text-sm sm:text-base text-gray-200 leading-relaxed">
-            Launch your application in three simple steps. Clone the repository, build your custom features, and deploy to production.
+          <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+            How Real-Time Messaging Works
+          </p>
+          <p className="mt-4 text-sm sm:text-base text-muted-foreground">
+            A breakdown of our end-to-end socket broadcast pipeline and optimistic UI state management.
           </p>
         </div>
 
-        {/* Interactive Timeline Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Timeline Stages Selector Navigation (Lg: 4/12) */}
-          <div className="lg:col-span-4 flex flex-col justify-start space-y-4">
-            <span className="text-xs font-mono font-bold tracking-wider text-gray-200 uppercase ml-2">
-              Select Onboarding Step
-            </span>
-
-            {ROADMAP.map((phase: RoadmapPhase, idx: number) => {
-              const isActive = activeStageIdx === idx;
-              return (
-                <button
-                  key={phase.stage}
-                  onClick={() => setActiveStageIdx(idx)}
-                  className={`w-full text-left p-5 rounded-xl border transition-all duration-300 relative group cursor-pointer ${
-                    isActive
-                      ? "bg-white/3 border-white/10 ring-1 ring-white/5 shadow-xl"
-                      : "bg-transparent border-white/5 hover:border-white/10 hover:bg-white/0.5"
-                  }`}
-                >
-                  {/* Left indicator accent color */}
-                  {isActive && (
-                    <span className="absolute left-0 top-4 bottom-4 w-1 bg-brand-primary rounded-r" />
-                  )}
-
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-mono font-bold text-gray-200">
-                      {phase.stage}
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded border font-semibold ${getStatusBadgeClass(phase.status)}`}
-                    >
-                      {phase.status}
-                    </span>
-                  </div>
-
-                  <h3 className="font-display font-semibold text-sm text-gray-200 group-hover:text-white transition-colors">
-                    {phase.title}
-                  </h3>
-                </button>
-              );
-            })}
-
-            {/* Extra Info */}
-            <div className="p-4 rounded-xl border border-white/5 bg-obsidian-950/40 space-y-2 mt-4">
-              <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-gray-200">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                Onboarding Support
-              </span>
-              <p className="text-[11px] text-gray-200 leading-relaxed">
-                Our customer engineering team is here to assist you at every
-                step, ensuring a smooth, secure connection of your communication
-                lines.
-              </p>
-            </div>
-          </div>
-
-          {/* Timeline Phase Active Details (Lg: 8/12) */}
-          <div className="lg:col-span-8 salix-card p-8 bg-obsidian-950/20 flex flex-col justify-between">
-            <div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
-                <div>
-                  <span className="text-xs font-mono font-bold text-brand-primary uppercase tracking-wider">
-                    Currently Viewing: {ROADMAP[activeStageIdx].stage}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((item, idx) => (
+            <motion.div
+              key={item.step}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className="p-6 rounded-2xl bg-background border border-border hover:border-primary/40 transition-all duration-300 flex flex-col justify-between shadow-xs relative group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-2xl font-black font-mono text-primary/40 group-hover:text-primary transition-colors">
+                    {item.step}
                   </span>
-                  <h3 className="font-display font-bold text-xl sm:text-2xl text-white mt-1">
-                    {ROADMAP[activeStageIdx].title}
-                  </h3>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    {item.icon}
+                  </div>
                 </div>
 
-                <span
-                  className={`inline-flex items-center gap-1.5 text-xs font-mono font-semibold px-3 py-1.5 rounded-full border ${getStatusBadgeClass(ROADMAP[activeStageIdx].status)}`}
-                >
-                  {getStatusIcon(ROADMAP[activeStageIdx].status)}
-                  {ROADMAP[activeStageIdx].status}
+                <h3 className="text-base font-bold text-foreground mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-border/50">
+                <span className="text-[10px] font-mono font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                  {item.badge}
                 </span>
               </div>
-
-              {/* Phase Description */}
-              <p className="text-sm text-gray-200 mt-6 leading-relaxed">
-                {ROADMAP[activeStageIdx].description}
-              </p>
-
-              {/* Milestone Bullet Grid */}
-              <div className="mt-8 space-y-4">
-                <h4 className="text-xs font-mono font-bold text-gray-200 uppercase tracking-widest">
-                  Key Deliverables & Specifications
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {ROADMAP[activeStageIdx].items.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-obsidian-850/50 rounded-xl border border-white/5 flex items-start gap-2.5 hover:border-white/10 transition-colors"
-                    >
-                      <span className="w-5 h-5 rounded-full bg-primary/5 border border-primary/10 flex items-center justify-center text-brand-primary text-xs font-mono shrink-0 mt-0.5">
-                        {idx + 1}
-                      </span>
-                      <span className="text-xs text-gray-300 leading-relaxed font-sans">
-                        {item}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Stage bottom action link */}
-            <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-gray-200 font-mono">
-                * Onboarding assistance is fully included with all Onedesk Pro
-                plans.
-              </span>
-
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-1.5 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary font-mono text-xs font-semibold px-4.5 py-2 rounded-lg border border-brand-primary/20 transition-all cursor-pointer group"
-              >
-                See the Product in Action
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-            </div>
-          </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

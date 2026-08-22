@@ -43,7 +43,7 @@ export default async function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AuthProvider user={user}>
-          <ThemeProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <QueryProvider>{children}</QueryProvider>
           </ThemeProvider>
         </AuthProvider>

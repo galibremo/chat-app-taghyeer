@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "./icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,8 +15,16 @@ export default function Navbar() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Detect scroll position immediately on mount and after browser scroll restoration
+    handleScroll();
+    const rafId = requestAnimationFrame(handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const menuItems = [
@@ -26,17 +35,9 @@ export default function Navbar() {
 
   const scrollToSection = (targetId: string) => {
     const element = document.getElementById(targetId);
-    if (!element) return;
-
-    const elementHeight = element.offsetHeight;
-    const viewportHeight = window.innerHeight;
-    const targetPosition =
-      element.getBoundingClientRect().top +
-      window.scrollY -
-      viewportHeight / 2 +
-      elementHeight / 2;
-
-    window.scrollTo({ top: targetPosition, behavior: "smooth" });
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
@@ -75,6 +76,7 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
@@ -92,8 +94,9 @@ export default function Navbar() {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          {/* Mobile Menu Button & ThemeToggle */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"

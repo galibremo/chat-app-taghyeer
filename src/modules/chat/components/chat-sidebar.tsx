@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Logout01Icon,
   Search01Icon,
   UserGroupIcon,
   Add01Icon,
+  Home01Icon,
 } from "hugeicons-react";
 
 import { useSocket } from "@/providers/socket-provider";
@@ -15,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface ChatSidebarProps {
   conversations: NormalizedConversation[];
@@ -121,15 +124,27 @@ export function ChatSidebar({
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={logout}
-          title="Log out"
-          className="cursor-pointer text-muted-foreground hover:text-destructive hover:bg-accent"
-        >
-          <Logout01Icon className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Link href="/" title="Go to landing page">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent"
+            >
+              <Home01Icon className="w-5 h-5" />
+            </Button>
+          </Link>
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={logout}
+            title="Log out"
+            className="cursor-pointer text-muted-foreground hover:text-destructive hover:bg-accent"
+          >
+            <Logout01Icon className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Action Buttons & Search */}
