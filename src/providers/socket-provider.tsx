@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getAuthTokenCookie } from "@/lib/cookie";
@@ -9,6 +15,7 @@ import { CHAT_QUERY_KEYS } from "@/modules/chat/actions/chat.mutations";
 import {
   normalizeConversation,
   normalizeMessage,
+  updateConversationsList,
 } from "@/modules/chat/utils/normalize";
 import {
   NormalizedConversation,
@@ -35,7 +42,8 @@ const SocketContext = createContext<SocketContextType>({
 });
 
 const SOCKET_SERVER_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL || "https://frontend-task-chatapp.onrender.com";
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  "https://frontend-task-chatapp.onrender.com";
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth();
@@ -78,7 +86,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       console.error("[Socket] Connection error:", err.message);
       setIsConnected(false);
       setIsConnecting(false);
-      setSocketError(err.message || "Failed to connect to real-time chat server");
+      setSocketError(
+        err.message || "Failed to connect to real-time chat server",
+      );
     });
 
     socketInstance.on("disconnect", (reason) => {
@@ -93,52 +103,57 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       const normalized = normalizeMessage(payload);
 
       // 1. Append message to target conversation's message cache
-      queryClient.setQueryData<{ messages: NormalizedMessage[]; hasMore: boolean }>(
-        CHAT_QUERY_KEYS.messages(normalized.conversation),
-        (old) => {
-          if (!old) return { messages: [normalized], hasMore: false };
+      queryClient.setQueryData<{
+        messages: NormalizedMessage[];
+        hasMore: boolean;
+      }>(CHAT_QUERY_KEYS.messages(normalized.conversation), (old) => {
+        if (!old) return { messages: [normalized], hasMore: false };
 
-          // 1. If message with exact _id exists, update it
-          const existsById = old.messages.some((m) => m._id === normalized._id);
-          if (existsById) {
-            return {
-              ...old,
-              messages: old.messages.map((m) => (m._id === normalized._id ? normalized : m)),
-            };
-          }
+        // 1. If message with exact _id exists, update it
+        const existsById = old.messages.some((m) => m._id === normalized._id);
+        if (existsById) {
+          return {
+            ...old,
+            messages: old.messages.map((m) =>
+              m._id === normalized._id ? normalized : m,
+            ),
+          };
+        }
 
-          // 2. If optimistic temp message exists, replace it
-          const tempIdx = old.messages.findIndex(
-            (m) =>
-              (m._id.startsWith("temp-") || m.status === "pending") &&
-              m.text === normalized.text &&
-              m.sender === normalized.sender,
-          );
+        // 2. If optimistic temp message exists, replace it
+        const tempIdx = old.messages.findIndex(
+          (m) =>
+            (m._id.startsWith("temp-") || m.status === "pending") &&
+            m.text === normalized.text &&
+            m.sender === normalized.sender,
+        );
 
-          if (tempIdx !== -1) {
-            const updated = [...old.messages];
-            updated[tempIdx] = normalized;
-            return { ...old, messages: updated };
-          }
+        if (tempIdx !== -1) {
+          const updated = [...old.messages];
+          updated[tempIdx] = normalized;
+          return { ...old, messages: updated };
+        }
 
-          return { ...old, messages: [...old.messages, normalized] };
-        },
-      );
+        return { ...old, messages: [...old.messages, normalized] };
+      });
 
-      // 2. Update last message & updatedAt in conversations list
+      // 2. Update last message & updatedAt in conversations list and move to top
       queryClient.setQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
         (old = []) => {
-          return old.map((conv) => {
-            if (conv._id === normalized.conversation) {
-              return {
-                ...conv,
-                lastMessage: normalized,
-                updatedAt: normalized.createdAt,
-              };
-            }
-            return conv;
+          const targetConv = old.find((c) => c._id === normalized.conversation);
+          if (targetConv) {
+            const updatedConv: NormalizedConversation = {
+              ...targetConv,
+              lastMessage: normalized,
+              updatedAt: normalized.createdAt,
+            };
+            return updateConversationsList(old, updatedConv);
+          }
+          queryClient.invalidateQueries({
+            queryKey: CHAT_QUERY_KEYS.conversations,
           });
+          return old;
         },
       );
     });
@@ -155,13 +170,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         queryClient.setQueryData<NormalizedConversation[]>(
           CHAT_QUERY_KEYS.conversations,
-          (old = []) => {
-            const exists = old.some((c) => c._id === normalized._id);
-            if (exists) {
-              return old.map((c) => (c._id === normalized._id ? normalized : c));
-            }
-            return [normalized, ...old];
-          },
+          (old = []) => updateConversationsList(old, normalized),
         );
       },
     );

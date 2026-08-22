@@ -24,7 +24,7 @@ export function normalizeMessage(
     ("_id" in raw && raw._id) ||
     ("id" in raw && raw.id) ||
     `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  
+
   let createdAtIso: string;
   if (typeof raw.createdAt === "number") {
     createdAtIso = new Date(raw.createdAt).toISOString();
@@ -40,7 +40,11 @@ export function normalizeMessage(
     sender: (() => {
       const senderVal = raw.sender as unknown;
       if (typeof senderVal === "string") return senderVal;
-      if (typeof senderVal === "object" && senderVal !== null && "_id" in senderVal) {
+      if (
+        typeof senderVal === "object" &&
+        senderVal !== null &&
+        "_id" in senderVal
+      ) {
         return String((senderVal as { _id: unknown })._id);
       }
       return "";
@@ -79,7 +83,8 @@ export function normalizeConversation(
       );
       if (userObjs.length > 0) {
         participants = userObjs;
-        const other = userObjs.find((u) => u._id !== currentUserId) || userObjs[0];
+        const other =
+          userObjs.find((u) => u._id !== currentUserId) || userObjs[0];
         participant = other;
         name = other?.name || "Direct Chat";
       } else {
@@ -94,8 +99,15 @@ export function normalizeConversation(
     ? normalizeMessage(raw.lastMessage as RawMessage)
     : null;
 
-  const updatedAt =
-    raw.updatedAt || raw.createdAt || new Date().toISOString();
+  let updatedAt = raw.updatedAt || raw.createdAt || new Date().toISOString();
+
+  if (lastMessage && lastMessage.createdAt) {
+    const lastMsgTime = new Date(lastMessage.createdAt).getTime();
+    const updatedTime = new Date(updatedAt).getTime();
+    if (!isNaN(lastMsgTime) && (isNaN(updatedTime) || lastMsgTime > updatedTime)) {
+      updatedAt = lastMessage.createdAt;
+    }
+  }
 
   return {
     _id: raw._id,
@@ -108,4 +120,32 @@ export function normalizeConversation(
     lastMessage,
     updatedAt,
   };
+}
+
+export function getConversationTimestamp(conv: NormalizedConversation): number {
+  const lastMsgTime = conv.lastMessage?.createdAt
+    ? new Date(conv.lastMessage.createdAt).getTime()
+    : 0;
+  const updatedAtTime = conv.updatedAt
+    ? new Date(conv.updatedAt).getTime()
+    : 0;
+  const validLastMsgTime = isNaN(lastMsgTime) ? 0 : lastMsgTime;
+  const validUpdatedAtTime = isNaN(updatedAtTime) ? 0 : updatedAtTime;
+  return Math.max(validLastMsgTime, validUpdatedAtTime);
+}
+
+export function sortConversations(
+  conversations: NormalizedConversation[],
+): NormalizedConversation[] {
+  return [...conversations].sort(
+    (a, b) => getConversationTimestamp(b) - getConversationTimestamp(a),
+  );
+}
+
+export function updateConversationsList(
+  conversations: NormalizedConversation[],
+  updatedConv: NormalizedConversation,
+): NormalizedConversation[] {
+  const filtered = conversations.filter((c) => c._id !== updatedConv._id);
+  return sortConversations([updatedConv, ...filtered]);
 }

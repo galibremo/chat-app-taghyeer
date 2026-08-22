@@ -17,6 +17,8 @@ import {
 import {
   normalizeConversation,
   normalizeMessage,
+  sortConversations,
+  updateConversationsList,
 } from "../utils/normalize";
 import {
   NormalizedConversation,
@@ -42,7 +44,8 @@ export function useConversationsQuery() {
     queryKey: CHAT_QUERY_KEYS.conversations,
     queryFn: async () => {
       const raw = await getConversations();
-      return raw.map((conv) => normalizeConversation(conv, currentUserId));
+      const normalized = raw.map((conv) => normalizeConversation(conv, currentUserId));
+      return sortConversations(normalized);
     },
     enabled: Boolean(currentUserId),
     staleTime: 1000 * 30, // 30 seconds
@@ -98,13 +101,11 @@ export function useStartDirectMutation() {
       const normalized = normalizeConversation(newRawConv, user?._id);
       queryClient.setQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
-        (old = []) => {
-          const exists = old.some((c) => c._id === normalized._id);
-          if (exists) return old;
-          return [normalized, ...old];
-        },
+        (old = []) => updateConversationsList(old, normalized),
       );
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_QUERY_KEYS.conversations,
+      });
     },
   });
 }
@@ -117,15 +118,22 @@ export function useCreateGroupMutation() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: ({ name, participantIds }: { name: string; participantIds: string[] }) =>
-      createGroup(name, participantIds),
+    mutationFn: ({
+      name,
+      participantIds,
+    }: {
+      name: string;
+      participantIds: string[];
+    }) => createGroup(name, participantIds),
     onSuccess: (rawGroup) => {
       const normalized = normalizeConversation(rawGroup, user?._id);
       queryClient.setQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
-        (old = []) => [normalized, ...old.filter((c) => c._id !== normalized._id)],
+        (old = []) => updateConversationsList(old, normalized),
       );
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_QUERY_KEYS.conversations,
+      });
     },
   });
 }
@@ -138,15 +146,26 @@ export function useSendMessageMutation() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
-      sendMessage(conversationId, text),
+    mutationFn: ({
+      conversationId,
+      text,
+    }: {
+      conversationId: string;
+      text: string;
+    }) => sendMessage(conversationId, text),
     onMutate: async ({ conversationId, text }) => {
-      await queryClient.cancelQueries({ queryKey: CHAT_QUERY_KEYS.messages(conversationId) });
+      await queryClient.cancelQueries({
+        queryKey: CHAT_QUERY_KEYS.messages(conversationId),
+      });
 
       const previousMessagesData = queryClient.getQueryData<{
         messages: NormalizedMessage[];
         hasMore: boolean;
       }>(CHAT_QUERY_KEYS.messages(conversationId));
+
+      const previousConversationsData = queryClient.getQueryData<NormalizedConversation[]>(
+        CHAT_QUERY_KEYS.conversations,
+      );
 
       const optimisticMsg: NormalizedMessage = {
         _id: `temp-${Date.now()}`,
@@ -164,7 +183,23 @@ export function useSendMessageMutation() {
         });
       }
 
-      return { previousMessagesData };
+      if (previousConversationsData) {
+        queryClient.setQueryData<NormalizedConversation[]>(
+          CHAT_QUERY_KEYS.conversations,
+          (old = []) => {
+            const existingConv = old.find((c) => c._id === conversationId);
+            if (!existingConv) return old;
+            const updatedConv: NormalizedConversation = {
+              ...existingConv,
+              lastMessage: optimisticMsg,
+              updatedAt: optimisticMsg.createdAt,
+            };
+            return updateConversationsList(old, updatedConv);
+          },
+        );
+      }
+
+      return { previousMessagesData, previousConversationsData };
     },
     onError: (err, variables, context) => {
       if (context?.previousMessagesData) {
@@ -173,44 +208,54 @@ export function useSendMessageMutation() {
           context.previousMessagesData,
         );
       }
+      if (context?.previousConversationsData) {
+        queryClient.setQueryData(
+          CHAT_QUERY_KEYS.conversations,
+          context.previousConversationsData,
+        );
+      }
     },
     onSuccess: (savedRawMsg, variables) => {
       const normalized = normalizeMessage(savedRawMsg);
 
-      queryClient.setQueryData<{ messages: NormalizedMessage[]; hasMore: boolean }>(
-        CHAT_QUERY_KEYS.messages(variables.conversationId),
-        (old) => {
-          if (!old) return { messages: [normalized], hasMore: false };
+      queryClient.setQueryData<{
+        messages: NormalizedMessage[];
+        hasMore: boolean;
+      }>(CHAT_QUERY_KEYS.messages(variables.conversationId), (old) => {
+        if (!old) return { messages: [normalized], hasMore: false };
 
-          // Find optimistic temp message
-          const tempIdx = old.messages.findIndex(
-            (m) =>
-              m._id.startsWith("temp-") ||
-              (m.text === normalized.text && m.sender === normalized.sender),
-          );
+        // Find optimistic temp message
+        const tempIdx = old.messages.findIndex(
+          (m) =>
+            m._id.startsWith("temp-") ||
+            (m.text === normalized.text && m.sender === normalized.sender),
+        );
 
-          if (tempIdx !== -1) {
-            const updated = [...old.messages];
-            updated[tempIdx] = normalized;
-            return { ...old, messages: updated };
-          }
+        if (tempIdx !== -1) {
+          const updated = [...old.messages];
+          updated[tempIdx] = normalized;
+          return { ...old, messages: updated };
+        }
 
-          if (old.messages.some((m) => m._id === normalized._id)) {
-            return old;
-          }
+        if (old.messages.some((m) => m._id === normalized._id)) {
+          return old;
+        }
 
-          return { ...old, messages: [...old.messages, normalized] };
-        },
-      );
+        return { ...old, messages: [...old.messages, normalized] };
+      });
 
       queryClient.setQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
-        (old = []) =>
-          old.map((c) =>
-            c._id === variables.conversationId
-              ? { ...c, lastMessage: normalized, updatedAt: normalized.createdAt }
-              : c,
-          ),
+        (old = []) => {
+          const existingConv = old.find((c) => c._id === variables.conversationId);
+          if (!existingConv) return old;
+          const updatedConv: NormalizedConversation = {
+            ...existingConv,
+            lastMessage: normalized,
+            updatedAt: normalized.createdAt,
+          };
+          return updateConversationsList(old, updatedConv);
+        },
       );
     },
   });
@@ -228,10 +273,11 @@ function useUpdateGroupMutation<T>(
       const normalized = normalizeConversation(updatedRawGroup, user?._id);
       queryClient.setQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
-        (old = []) =>
-          old.map((c) => (c._id === normalized._id ? normalized : c)),
+        (old = []) => updateConversationsList(old, normalized),
       );
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_QUERY_KEYS.conversations,
+      });
     },
   });
 }
@@ -252,8 +298,7 @@ export function useRemoveGroupParticipantMutation() {
 
 export function usePromoteAdminMutation() {
   return useUpdateGroupMutation<{ conversationId: string; userId: string }>(
-    ({ conversationId, userId }) =>
-      promoteGroupAdmin(conversationId, userId),
+    ({ conversationId, userId }) => promoteGroupAdmin(conversationId, userId),
   );
 }
 

@@ -12,6 +12,7 @@ import {
 
 import { useSocket } from "@/providers/socket-provider";
 import { useAuth } from "@/providers/auth-provider";
+import { sortConversations } from "../utils/normalize";
 import { NormalizedConversation } from "../types/chat.types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,9 @@ export function ChatSidebar({
   const [filterText, setFilterText] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "direct" | "group">("all");
 
-  const filteredConversations = conversations.filter((c) => {
+  const sortedConversations = sortConversations(conversations);
+
+  const filteredConversations = sortedConversations.filter((c) => {
     if (activeTab === "direct" && c.type !== "direct") return false;
     if (activeTab === "group" && c.type !== "group") return false;
 
