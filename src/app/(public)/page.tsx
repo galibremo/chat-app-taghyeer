@@ -10,7 +10,7 @@ export default function Landing() {
   return (
     <>
       <JsonLd />
-      <div className="bg-background min-h-screen text-foreground flex flex-col font-sans">
+      <div className="bg-background min-h-screen text-foreground flex flex-col font-sans overflow-hidden">
         <Navbar />
         <main>
           <Hero />
