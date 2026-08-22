@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface ChatDetailsPanelProps {
   conversation: NormalizedConversation;
@@ -37,8 +38,8 @@ export function ChatDetailsPanel({
   const { user } = useAuth();
   const currentUserId = user?._id || "";
   const isGroup = conversation.type === "group";
-
   const isAdmin = isGroup && conversation.admins.includes(currentUserId);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [newGroupName, setNewGroupName] = useState(conversation.name);
@@ -136,9 +137,13 @@ export function ChatDetailsPanel({
   return (
     <>
       <motion.div
-        initial={{ width: 0, opacity: 0 }}
-        animate={{ width: "auto", opacity: 1 }}
-        exit={{ width: 0, opacity: 0 }}
+        initial={
+          isDesktop ? { width: 0, opacity: 0 } : { x: "100%", opacity: 0 }
+        }
+        animate={
+          isDesktop ? { width: "auto", opacity: 1 } : { x: 0, opacity: 1 }
+        }
+        exit={isDesktop ? { width: 0, opacity: 0 } : { x: "100%", opacity: 0 }}
         transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
         className="fixed inset-0 z-50 md:relative md:inset-auto md:z-auto w-full h-full md:w-auto overflow-hidden shrink-0 select-none border-0 md:border-l border-border bg-background"
       >
