@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { route } from "@/routes/routes";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   SentIcon,
@@ -110,7 +111,7 @@ export function ChatFeed({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => router.push("/chat")}
+            onClick={() => router.push(route.private.chat)}
             className="md:hidden text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer shrink-0 mr-0.5"
             title="Back to conversations"
           >

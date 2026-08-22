@@ -1,4 +1,5 @@
 import { fetchClient } from "@/lib/api/client";
+import { apiRoute } from "@/routes/routes";
 import {
   RawConversation,
   RawMessage,
@@ -12,7 +13,7 @@ export interface GetMessagesResponse {
 
 export async function getConversations(): Promise<RawConversation[]> {
   return fetchClient<RawConversation[]>({
-    url: "/conversations",
+    url: apiRoute.conversations.base,
     method: "GET",
   });
 }
@@ -20,7 +21,7 @@ export async function getConversations(): Promise<RawConversation[]> {
 export async function searchUsers(query: string): Promise<User[]> {
   if (!query.trim()) return [];
   return fetchClient<User[]>({
-    url: "/users/search",
+    url: apiRoute.conversations.searchUsers,
     method: "GET",
     params: { q: query.trim() },
   });
@@ -28,7 +29,7 @@ export async function searchUsers(query: string): Promise<User[]> {
 
 export async function startDirectConversation(userId: string): Promise<RawConversation> {
   return fetchClient<RawConversation>({
-    url: "/conversations",
+    url: apiRoute.conversations.base,
     method: "POST",
     body: { userId },
   });
@@ -36,7 +37,7 @@ export async function startDirectConversation(userId: string): Promise<RawConver
 
 export async function createGroup(name: string, participantIds: string[]): Promise<RawConversation> {
   return fetchClient<RawConversation>({
-    url: "/conversations/group",
+    url: apiRoute.conversations.group,
     method: "POST",
     body: { name: name.trim(), participantIds },
   });
@@ -44,7 +45,7 @@ export async function createGroup(name: string, participantIds: string[]): Promi
 
 export async function getMessages(conversationId: string, limit = 50): Promise<GetMessagesResponse> {
   return fetchClient<GetMessagesResponse>({
-    url: `/conversations/${conversationId}/messages`,
+    url: apiRoute.conversations.messages(conversationId),
     method: "GET",
     params: { limit },
   });
@@ -52,7 +53,7 @@ export async function getMessages(conversationId: string, limit = 50): Promise<G
 
 export async function sendMessage(conversationId: string, text: string): Promise<RawMessage> {
   return fetchClient<RawMessage>({
-    url: "/messages",
+    url: apiRoute.messages.send,
     method: "POST",
     body: { conversationId, text: text.trim() },
   });
@@ -60,7 +61,7 @@ export async function sendMessage(conversationId: string, text: string): Promise
 
 export async function addGroupParticipants(conversationId: string, userIds: string[]): Promise<RawConversation> {
   return fetchClient<RawConversation>({
-    url: `/conversations/${conversationId}/participants`,
+    url: apiRoute.conversations.participants(conversationId),
     method: "POST",
     body: { userIds },
   });
@@ -68,14 +69,14 @@ export async function addGroupParticipants(conversationId: string, userIds: stri
 
 export async function removeGroupParticipant(conversationId: string, userId: string): Promise<RawConversation> {
   return fetchClient<RawConversation>({
-    url: `/conversations/${conversationId}/participants/${userId}`,
+    url: apiRoute.conversations.participant(conversationId, userId),
     method: "DELETE",
   });
 }
 
 export async function promoteGroupAdmin(conversationId: string, userId: string): Promise<RawConversation> {
   return fetchClient<RawConversation>({
-    url: `/conversations/${conversationId}/admins`,
+    url: apiRoute.conversations.admins(conversationId),
     method: "POST",
     body: { userId },
   });
@@ -83,7 +84,7 @@ export async function promoteGroupAdmin(conversationId: string, userId: string):
 
 export async function renameGroup(conversationId: string, name: string): Promise<RawConversation> {
   return fetchClient<RawConversation>({
-    url: `/conversations/${conversationId}`,
+    url: apiRoute.conversations.detail(conversationId),
     method: "PATCH",
     body: { name: name.trim() },
   });

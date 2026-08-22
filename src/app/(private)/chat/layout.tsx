@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { route } from "@/routes/routes";
 import { useConversationsQuery } from "@/modules/chat/actions/chat.mutations";
 import { ChatSidebar } from "@/modules/chat/components/chat-sidebar";
 import { NewChatDialog } from "@/modules/chat/components/new-chat-dialog";
@@ -18,15 +19,15 @@ export default function ChatLayout({
   const { data: conversations = [], isLoading } = useConversationsQuery();
 
   // Extract active conversation ID from URL path (e.g., /chat/123 -> 123)
-  const isChatRoom = pathname !== "/chat" && pathname !== "/chat/";
-  const activeConversationId = isChatRoom ? pathname.split("/chat/")[1] || null : null;
+  const isChatRoom = pathname !== route.private.chat && pathname !== `${route.private.chat}/`;
+  const activeConversationId = isChatRoom ? pathname.split(`${route.private.chat}/`)[1] || null : null;
 
   // Dialog states
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
 
   const handleSelectConversation = (id: string) => {
-    router.push(`/chat/${id}`);
+    router.push(route.private.chatRoom(id));
   };
 
   return (

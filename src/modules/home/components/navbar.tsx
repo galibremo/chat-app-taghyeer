@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "@/components/custom-ui/icons";
 import Link from "next/link";
+import { route } from "@/routes/routes";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -54,7 +55,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between pb-3.5">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href={route.public.home} className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-xs">
               💬
             </div>
@@ -81,13 +82,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
             <Link
-              href="/login"
+              href={route.protected.login}
               className={cn(buttonVariants({ variant: "outline", size: "sm" }), "cursor-pointer")}
             >
               Sign In
             </Link>
             <Link
-              href="/chat"
+              href={route.private.chat}
               className={cn(
                 buttonVariants({ size: "sm" }),
                 "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90",
@@ -142,14 +143,14 @@ export default function Navbar() {
               ))}
               <div className="flex flex-col gap-3 px-3">
                 <Link
-                  href="/login"
+                  href={route.protected.login}
                   onClick={() => setIsOpen(false)}
                   className="text-center py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent border border-border transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
-                  href="/chat"
+                  href={route.private.chat}
                   onClick={() => setIsOpen(false)}
                   className="text-center py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 >

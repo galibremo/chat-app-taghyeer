@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { route } from "@/routes/routes";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles, MessageCircle, ShieldCheck, Zap } from "@/components/custom-ui/icons";
 import MockDashboard from "./mock-dashboard";
@@ -62,14 +63,14 @@ export default function Hero() {
             className="mt-8 flex flex-col sm:flex-row gap-3.5 items-center justify-center w-full sm:w-auto"
           >
             <Link
-              href="/chat"
+              href={route.private.chat}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-7 py-3 rounded-xl font-bold text-sm tracking-tight transition-all duration-200 shadow-md shadow-primary/20 active:scale-[0.98] cursor-pointer group"
             >
               Start Chatting
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
-              href="/login"
+              href={route.protected.login}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-card hover:bg-accent text-foreground border border-border px-7 py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer shadow-xs"
             >
               Sign In / Register
