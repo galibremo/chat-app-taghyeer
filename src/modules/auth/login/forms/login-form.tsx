@@ -54,11 +54,14 @@ export default function LoginForm() {
               d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
             />
           </svg>
-          <span>{apiError.message || "Failed to log in. Please check your credentials."}</span>
+          <span>
+            {apiError.message ||
+              "Failed to log in. Please check your credentials."}
+          </span>
         </div>
       )}
 
-      <div className="space-y-1.5 text-left">
+      <div className="flex flex-col gap-1.5 text-left">
         <label htmlFor="name" className="text-sm font-semibold text-foreground">
           Display Name
         </label>
@@ -93,12 +96,17 @@ export default function LoginForm() {
           />
         </div>
         {errors.name && (
-          <p className="text-xs text-destructive font-medium pl-1">{errors.name}</p>
+          <p className="text-xs text-destructive font-medium pl-1">
+            {errors.name}
+          </p>
         )}
       </div>
 
-      <div className="space-y-1.5 text-left">
-        <label htmlFor="phone" className="text-sm font-semibold text-foreground">
+      <div className="flex flex-col gap-1.5 text-left">
+        <label
+          htmlFor="phone"
+          className="text-sm font-semibold text-foreground"
+        >
           Phone Number
         </label>
         <div className="relative">
@@ -132,7 +140,9 @@ export default function LoginForm() {
           />
         </div>
         {errors.phone && (
-          <p className="text-xs text-destructive font-medium pl-1">{errors.phone}</p>
+          <p className="text-xs text-destructive font-medium pl-1">
+            {errors.phone}
+          </p>
         )}
       </div>
 
@@ -144,7 +154,11 @@ export default function LoginForm() {
         >
           {isPending ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="size-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg
+                className="size-5 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -168,9 +182,9 @@ export default function LoginForm() {
       </div>
 
       <p className="text-xs text-center text-muted-foreground pt-1">
-        New around here? Entering a new phone number automatically registers your account.
+        New around here? Entering a new phone number automatically registers
+        your account.
       </p>
     </form>
   );
 }
-
