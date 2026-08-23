@@ -1,10 +1,6 @@
 import { fetchClient } from "@/lib/api/client";
 import { apiRoute } from "@/routes/routes";
-import {
-  RawConversation,
-  RawMessage,
-  User,
-} from "../types/chat.types";
+import { RawConversation, RawMessage, User } from "../types/chat.types";
 
 export interface GetMessagesResponse {
   messages: RawMessage[];
@@ -27,7 +23,9 @@ export async function searchUsers(query: string): Promise<User[]> {
   });
 }
 
-export async function startDirectConversation(userId: string): Promise<RawConversation> {
+export async function startDirectConversation(
+  userId: string,
+): Promise<RawConversation> {
   return fetchClient<RawConversation>({
     url: apiRoute.conversations.base,
     method: "POST",
@@ -35,7 +33,10 @@ export async function startDirectConversation(userId: string): Promise<RawConver
   });
 }
 
-export async function createGroup(name: string, participantIds: string[]): Promise<RawConversation> {
+export async function createGroup(
+  name: string,
+  participantIds: string[],
+): Promise<RawConversation> {
   return fetchClient<RawConversation>({
     url: apiRoute.conversations.group,
     method: "POST",
@@ -43,15 +44,25 @@ export async function createGroup(name: string, participantIds: string[]): Promi
   });
 }
 
-export async function getMessages(conversationId: string, limit = 50): Promise<GetMessagesResponse> {
+export async function getMessages(
+  conversationId: string,
+  limit = 20,
+  before?: string,
+): Promise<GetMessagesResponse> {
   return fetchClient<GetMessagesResponse>({
     url: apiRoute.conversations.messages(conversationId),
     method: "GET",
-    params: { limit },
+    params: {
+      limit,
+      ...(before ? { before } : {}),
+    },
   });
 }
 
-export async function sendMessage(conversationId: string, text: string): Promise<RawMessage> {
+export async function sendMessage(
+  conversationId: string,
+  text: string,
+): Promise<RawMessage> {
   return fetchClient<RawMessage>({
     url: apiRoute.messages.send,
     method: "POST",
@@ -59,7 +70,10 @@ export async function sendMessage(conversationId: string, text: string): Promise
   });
 }
 
-export async function addGroupParticipants(conversationId: string, userIds: string[]): Promise<RawConversation> {
+export async function addGroupParticipants(
+  conversationId: string,
+  userIds: string[],
+): Promise<RawConversation> {
   return fetchClient<RawConversation>({
     url: apiRoute.conversations.participants(conversationId),
     method: "POST",
@@ -67,14 +81,20 @@ export async function addGroupParticipants(conversationId: string, userIds: stri
   });
 }
 
-export async function removeGroupParticipant(conversationId: string, userId: string): Promise<RawConversation> {
+export async function removeGroupParticipant(
+  conversationId: string,
+  userId: string,
+): Promise<RawConversation> {
   return fetchClient<RawConversation>({
     url: apiRoute.conversations.participant(conversationId, userId),
     method: "DELETE",
   });
 }
 
-export async function promoteGroupAdmin(conversationId: string, userId: string): Promise<RawConversation> {
+export async function promoteGroupAdmin(
+  conversationId: string,
+  userId: string,
+): Promise<RawConversation> {
   return fetchClient<RawConversation>({
     url: apiRoute.conversations.admins(conversationId),
     method: "POST",
@@ -82,7 +102,10 @@ export async function promoteGroupAdmin(conversationId: string, userId: string):
   });
 }
 
-export async function renameGroup(conversationId: string, name: string): Promise<RawConversation> {
+export async function renameGroup(
+  conversationId: string,
+  name: string,
+): Promise<RawConversation> {
   return fetchClient<RawConversation>({
     url: apiRoute.conversations.detail(conversationId),
     method: "PATCH",

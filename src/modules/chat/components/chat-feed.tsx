@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { route } from "@/routes/routes";
 import TextareaAutosize from "react-textarea-autosize";
@@ -37,13 +37,41 @@ export function ChatFeed({
   const currentUserId = user?._id || "";
 
   const [messageText, setMessageText] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const topSentinelRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const scrollHeightBeforeUpdateRef = useRef<number>(0);
+  const scrollTopBeforeUpdateRef = useRef<number>(0);
+  const isFetchingOlderRef = useRef<boolean>(false);
+  const isInitialScrollDoneRef = useRef<boolean>(false);
+
   const conversationId = conversation?._id || null;
-  const { data, isLoading } = useMessagesQuery(conversationId);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useMessagesQuery(conversationId);
   const sendMessageMutation = useSendMessageMutation();
 
-  const messages = React.useMemo(() => data?.messages || [], [data?.messages]);
+  // Reset initial scroll flag when changing conversation
+  useEffect(() => {
+    isInitialScrollDoneRef.current = false;
+  }, [conversationId]);
+
+  // Flatten messages into chronological order (oldest to newest) and deduplicate by _id
+  const messages = React.useMemo(() => {
+    if (!data?.pages) return [];
+    const rawMessages = [...data.pages].reverse().flatMap((page) => page.messages);
+    const seen = new Set<string>();
+    return rawMessages.filter((msg) => {
+      if (!msg._id || seen.has(msg._id)) return false;
+      seen.add(msg._id);
+      return true;
+    });
+  }, [data?.pages]);
 
   // Map participant IDs to names for displaying senders in group chat
   const participantMap = React.useMemo(() => {
@@ -54,12 +82,84 @@ export function ChatFeed({
     return map;
   }, [conversation]);
 
-  // Scroll to bottom on new message, status update, or conversation change
+  // Scroll position preservation when loading previous (older) messages
+  useLayoutEffect(() => {
+    if (isFetchingOlderRef.current && scrollContainerRef.current) {
+      const newScrollHeight = scrollContainerRef.current.scrollHeight;
+      const heightDifference =
+        newScrollHeight - scrollHeightBeforeUpdateRef.current;
+      scrollContainerRef.current.scrollTop =
+        scrollTopBeforeUpdateRef.current + heightDifference;
+      isFetchingOlderRef.current = false;
+    }
+  }, [messages]);
+
+  // Auto scroll to bottom on initial load
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (!isInitialScrollDoneRef.current && messages.length > 0) {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "instant" as ScrollBehavior });
+        isInitialScrollDoneRef.current = true;
+      }
     }
   }, [messages, conversationId]);
+
+  // Auto scroll to bottom ONLY when a new message is appended at the bottom
+  const lastMessageId = messages.length > 0 ? messages[messages.length - 1]._id : null;
+  const prevLastMessageIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const isNewMessageAtBottom =
+      lastMessageId !== null &&
+      prevLastMessageIdRef.current !== null &&
+      lastMessageId !== prevLastMessageIdRef.current &&
+      !isFetchingOlderRef.current;
+
+    prevLastMessageIdRef.current = lastMessageId;
+
+    if (
+      isNewMessageAtBottom &&
+      isInitialScrollDoneRef.current &&
+      messagesEndRef.current
+    ) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [lastMessageId]);
+
+  // Trigger loading older messages when top sentinel is intersected
+  const loadOlderMessages = React.useCallback(() => {
+    if (!hasNextPage || isFetchingNextPage || isFetchingOlderRef.current) {
+      return;
+    }
+
+    if (scrollContainerRef.current) {
+      scrollHeightBeforeUpdateRef.current = scrollContainerRef.current.scrollHeight;
+      scrollTopBeforeUpdateRef.current = scrollContainerRef.current.scrollTop;
+      isFetchingOlderRef.current = true;
+    }
+    fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    const sentinel = topSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first && first.isIntersecting && isInitialScrollDoneRef.current) {
+          loadOlderMessages();
+        }
+      },
+      {
+        threshold: 0.1,
+        root: scrollContainerRef.current,
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadOlderMessages]);
 
   if (!conversation) {
     return (
@@ -160,7 +260,21 @@ export function ChatFeed({
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4"
+      >
+        {/* Top Sentinel for Scroll-Up Intersection Detection */}
+        <div ref={topSentinelRef} className="h-1 w-full" />
+
+        {/* Spinner Loader when fetching older messages */}
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center py-2 gap-2 text-xs text-muted-foreground animate-fadeIn">
+            <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span>Loading previous messages...</span>
+          </div>
+        )}
+
         {isLoading && (
           <div className="text-center py-10 text-xs text-muted-foreground animate-pulse">
             Loading message history...

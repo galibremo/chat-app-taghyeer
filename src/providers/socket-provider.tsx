@@ -8,10 +8,13 @@ import React, {
   useState,
 } from "react";
 import { io, Socket } from "socket.io-client";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { getAuthTokenCookie } from "@/lib/cookie";
 import { useAuth } from "@/providers/auth-provider";
-import { CHAT_QUERY_KEYS } from "@/modules/chat/actions/chat.mutations";
+import {
+  CHAT_QUERY_KEYS,
+  MessagesPage,
+} from "@/modules/chat/actions/chat.mutations";
 import {
   normalizeConversation,
   normalizeMessage,
@@ -103,39 +106,53 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       const normalized = normalizeMessage(payload);
 
       // 1. Append message to target conversation's message cache
-      queryClient.setQueryData<{
-        messages: NormalizedMessage[];
-        hasMore: boolean;
-      }>(CHAT_QUERY_KEYS.messages(normalized.conversation), (old) => {
-        if (!old) return { messages: [normalized], hasMore: false };
+      queryClient.setQueryData<InfiniteData<MessagesPage>>(
+        CHAT_QUERY_KEYS.messages(normalized.conversation),
+        (old) => {
+          if (!old || !old.pages.length) {
+            return {
+              pages: [{ messages: [normalized], hasMore: false }],
+              pageParams: [undefined],
+            };
+          }
 
-        // 1. If message with exact _id exists, update it
-        const existsById = old.messages.some((m) => m._id === normalized._id);
-        if (existsById) {
+          const firstPage = old.pages[0];
+          const existsById = firstPage.messages.some(
+            (m) => m._id === normalized._id,
+          );
+
+          let updatedMessages: NormalizedMessage[];
+          if (existsById) {
+            updatedMessages = firstPage.messages.map((m) =>
+              m._id === normalized._id ? normalized : m,
+            );
+          } else {
+            const tempIdx = firstPage.messages.findIndex(
+              (m) =>
+                (m._id.startsWith("temp-") || m.status === "pending") &&
+                m.text === normalized.text &&
+                m.sender === normalized.sender,
+            );
+
+            if (tempIdx !== -1) {
+              updatedMessages = [...firstPage.messages];
+              updatedMessages[tempIdx] = normalized;
+            } else {
+              updatedMessages = [...firstPage.messages, normalized];
+            }
+          }
+
+          const updatedFirstPage: MessagesPage = {
+            ...firstPage,
+            messages: updatedMessages,
+          };
+
           return {
             ...old,
-            messages: old.messages.map((m) =>
-              m._id === normalized._id ? normalized : m,
-            ),
+            pages: [updatedFirstPage, ...old.pages.slice(1)],
           };
-        }
-
-        // 2. If optimistic temp message exists, replace it
-        const tempIdx = old.messages.findIndex(
-          (m) =>
-            (m._id.startsWith("temp-") || m.status === "pending") &&
-            m.text === normalized.text &&
-            m.sender === normalized.sender,
-        );
-
-        if (tempIdx !== -1) {
-          const updated = [...old.messages];
-          updated[tempIdx] = normalized;
-          return { ...old, messages: updated };
-        }
-
-        return { ...old, messages: [...old.messages, normalized] };
-      });
+        },
+      );
 
       // 2. Update last message & updatedAt in conversations list and move to top
       queryClient.setQueryData<NormalizedConversation[]>(

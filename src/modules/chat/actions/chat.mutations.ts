@@ -1,6 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useAuth } from "@/providers/auth-provider";
 import {
   addGroupParticipants,
@@ -33,6 +39,11 @@ export const CHAT_QUERY_KEYS = {
   userSearch: (query: string) => ["users", "search", query] as const,
 };
 
+export interface MessagesPage {
+  messages: NormalizedMessage[];
+  hasMore: boolean;
+}
+
 /**
  * Hook to fetch and normalize user conversations
  */
@@ -53,14 +64,18 @@ export function useConversationsQuery() {
 }
 
 /**
- * Hook to fetch message history for an active conversation
+ * Hook to fetch message history for an active conversation with infinite pagination
  */
 export function useMessagesQuery(conversationId: string | null) {
-  return useQuery({
+  return useInfiniteQuery<MessagesPage>({
     queryKey: CHAT_QUERY_KEYS.messages(conversationId || ""),
-    queryFn: async () => {
+    queryFn: async ({ pageParam }) => {
       if (!conversationId) return { messages: [], hasMore: false };
-      const response = await getMessages(conversationId);
+      const response = await getMessages(
+        conversationId,
+        20,
+        pageParam as string | undefined,
+      );
       const normalizedMessages = response.messages
         .map(normalizeMessage)
         .sort(
@@ -71,6 +86,12 @@ export function useMessagesQuery(conversationId: string | null) {
         messages: normalizedMessages,
         hasMore: response.hasMore,
       };
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.hasMore || lastPage.messages.length === 0) return undefined;
+      // Index 0 is the oldest message in lastPage because messages are sorted ascending by createdAt
+      return lastPage.messages[0]._id;
     },
     enabled: Boolean(conversationId),
   });
@@ -158,10 +179,9 @@ export function useSendMessageMutation() {
         queryKey: CHAT_QUERY_KEYS.messages(conversationId),
       });
 
-      const previousMessagesData = queryClient.getQueryData<{
-        messages: NormalizedMessage[];
-        hasMore: boolean;
-      }>(CHAT_QUERY_KEYS.messages(conversationId));
+      const previousMessagesData = queryClient.getQueryData<
+        InfiniteData<MessagesPage>
+      >(CHAT_QUERY_KEYS.messages(conversationId));
 
       const previousConversationsData = queryClient.getQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
@@ -177,10 +197,26 @@ export function useSendMessageMutation() {
       };
 
       if (previousMessagesData) {
-        queryClient.setQueryData(CHAT_QUERY_KEYS.messages(conversationId), {
-          ...previousMessagesData,
-          messages: [...previousMessagesData.messages, optimisticMsg],
-        });
+        queryClient.setQueryData<InfiniteData<MessagesPage>>(
+          CHAT_QUERY_KEYS.messages(conversationId),
+          (old) => {
+            if (!old || !old.pages.length) {
+              return {
+                pages: [{ messages: [optimisticMsg], hasMore: false }],
+                pageParams: [undefined],
+              };
+            }
+            const firstPage = old.pages[0];
+            const updatedFirstPage: MessagesPage = {
+              ...firstPage,
+              messages: [...firstPage.messages, optimisticMsg],
+            };
+            return {
+              ...old,
+              pages: [updatedFirstPage, ...old.pages.slice(1)],
+            };
+          },
+        );
       }
 
       if (previousConversationsData) {
@@ -218,31 +254,44 @@ export function useSendMessageMutation() {
     onSuccess: (savedRawMsg, variables) => {
       const normalized = normalizeMessage(savedRawMsg);
 
-      queryClient.setQueryData<{
-        messages: NormalizedMessage[];
-        hasMore: boolean;
-      }>(CHAT_QUERY_KEYS.messages(variables.conversationId), (old) => {
-        if (!old) return { messages: [normalized], hasMore: false };
+      queryClient.setQueryData<InfiniteData<MessagesPage>>(
+        CHAT_QUERY_KEYS.messages(variables.conversationId),
+        (old) => {
+          if (!old || !old.pages.length) {
+            return {
+              pages: [{ messages: [normalized], hasMore: false }],
+              pageParams: [undefined],
+            };
+          }
 
-        // Find optimistic temp message
-        const tempIdx = old.messages.findIndex(
-          (m) =>
-            m._id.startsWith("temp-") ||
-            (m.text === normalized.text && m.sender === normalized.sender),
-        );
+          const firstPage = old.pages[0];
+          const tempIdx = firstPage.messages.findIndex(
+            (m) =>
+              m._id.startsWith("temp-") ||
+              (m.text === normalized.text && m.sender === normalized.sender),
+          );
 
-        if (tempIdx !== -1) {
-          const updated = [...old.messages];
-          updated[tempIdx] = normalized;
-          return { ...old, messages: updated };
-        }
+          let updatedMessages: NormalizedMessage[];
+          if (tempIdx !== -1) {
+            updatedMessages = [...firstPage.messages];
+            updatedMessages[tempIdx] = normalized;
+          } else if (firstPage.messages.some((m) => m._id === normalized._id)) {
+            return old;
+          } else {
+            updatedMessages = [...firstPage.messages, normalized];
+          }
 
-        if (old.messages.some((m) => m._id === normalized._id)) {
-          return old;
-        }
+          const updatedFirstPage: MessagesPage = {
+            ...firstPage,
+            messages: updatedMessages,
+          };
 
-        return { ...old, messages: [...old.messages, normalized] };
-      });
+          return {
+            ...old,
+            pages: [updatedFirstPage, ...old.pages.slice(1)],
+          };
+        },
+      );
 
       queryClient.setQueryData<NormalizedConversation[]>(
         CHAT_QUERY_KEYS.conversations,
