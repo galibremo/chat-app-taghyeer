@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { removeAuthTokenCookie } from "@/lib/cookie";
 import { route } from "@/routes/routes";
 
@@ -29,13 +30,17 @@ export default function AuthProvider({
   const [updatedUser, setUpdatedUser] = useState<AuthUser | null>(user);
   const router = useRouter();
 
+  useEffect(() => {
+    setUpdatedUser(user);
+  }, [user]);
+
   const setUser = (nextUser: AuthUser | null) => {
     setUpdatedUser(nextUser);
   };
 
   const logout = () => {
     removeAuthTokenCookie();
-    setUpdatedUser(null);
+    toast.info("Logged out successfully");
     router.push(route.public.home);
     router.refresh();
   };

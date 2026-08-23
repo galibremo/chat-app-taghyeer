@@ -64,11 +64,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
+      setIsConnected(false);
+      setIsConnecting(false);
       return;
     }
 
     const token = getAuthTokenCookie();
-    if (!token) return;
+    if (!token) {
+      setIsConnected(false);
+      setIsConnecting(false);
+      return;
+    }
+
+    setIsConnecting(true);
+    setSocketError(null);
 
     const socketInstance = io(SOCKET_SERVER_URL, {
       auth: { token },
@@ -192,9 +201,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
-    queueMicrotask(() => {
-      setSocket(socketInstance);
-    });
+    setSocket(socketInstance);
 
     return () => {
       socketInstance.off("connect");
@@ -204,10 +211,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socketInstance.off("conversation:updated");
       socketInstance.disconnect();
       setSocket(null);
-      setIsConnected(false);
-      setIsConnecting(false);
     };
-  }, [isAuthenticated, user?._id, queryClient]);
+  }, [isAuthenticated, queryClient]);
 
   const sendSocketMessage = (
     conversationId: string,

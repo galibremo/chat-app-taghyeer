@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChatSidebarProps {
   conversations: NormalizedConversation[];
@@ -85,16 +86,12 @@ export function ChatSidebar({
               className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${
                 isConnected
                   ? "bg-emerald-500 shadow-emerald-500/50 shadow-xs"
-                  : isConnecting
-                    ? "bg-amber-500 animate-pulse"
-                    : "bg-destructive"
+                  : "bg-amber-500 animate-pulse"
               }`}
               title={
                 isConnected
                   ? "Real-time socket connected"
-                  : isConnecting
-                    ? "Connecting socket..."
-                    : "Socket disconnected"
+                  : "Connecting socket..."
               }
             />
           </div>
@@ -106,18 +103,10 @@ export function ChatSidebar({
             <div className="flex items-center gap-1.5 text-[11px]">
               <span
                 className={`font-medium ${
-                  isConnected
-                    ? "text-emerald-500"
-                    : isConnecting
-                      ? "text-amber-500"
-                      : "text-destructive"
+                  isConnected ? "text-emerald-500" : "text-amber-500"
                 }`}
               >
-                {isConnected
-                  ? "Online"
-                  : isConnecting
-                    ? "Connecting..."
-                    : "Offline"}
+                {isConnected ? "Online" : "Connecting..."}
               </span>
               <span className="text-muted-foreground">•</span>
               <span className="text-muted-foreground truncate">
@@ -220,8 +209,22 @@ export function ChatSidebar({
       {/* Conversations Scroll Area */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
         {isLoading && (
-          <div className="p-4 text-center text-xs text-muted-foreground animate-pulse">
-            Loading chats...
+          <div className="space-y-1">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-full p-3 rounded-2xl flex items-center gap-3 border border-transparent"
+              >
+                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-3.5 w-28" />
+                    <Skeleton className="h-2.5 w-10" />
+                  </div>
+                  <Skeleton className="h-3 w-36" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

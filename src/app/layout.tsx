@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Figtree, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/query-provider";
+import { SocketProvider } from "@/providers/socket-provider";
 import { cn } from "@/lib/utils";
 import AuthProvider from "@/providers/auth-provider";
 import { getSessionUser } from "@/lib/services";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { Toaster } from "sonner";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -21,7 +23,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://chatflow.app"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://chatflow.app",
   ),
   title: {
     default: "ChatFlow - Real-Time Direct & Group Messaging",
@@ -82,7 +84,10 @@ export default async function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AuthProvider user={user}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <SocketProvider>{children}</SocketProvider>
+            </QueryProvider>
+            <Toaster richColors position="bottom-right" />
           </ThemeProvider>
         </AuthProvider>
       </body>

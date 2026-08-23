@@ -7,9 +7,12 @@ import Link from "next/link";
 import { route } from "@/routes/routes";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
+  const { user, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -81,21 +84,39 @@ export default function Navbar() {
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <Link
-              href={route.protected.login}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "cursor-pointer")}
-            >
-              Sign In
-            </Link>
-            <Link
-              href={route.private.chat}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90",
-              )}
-            >
-              Start Chatting →
-            </Link>
+            {isAuthenticated && user ? (
+              <Link
+                href={route.private.chat}
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-accent/80 hover:bg-accent border border-border text-foreground transition-all duration-200 cursor-pointer shadow-xs hover:shadow-sm"
+              >
+                <Avatar size="sm" className="bg-primary text-primary-foreground">
+                  <AvatarFallback className="text-primary-foreground text-xs font-bold">
+                    {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-semibold truncate max-w-[130px]">
+                  {user.name || "Chat"}
+                </span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href={route.protected.login}
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "cursor-pointer")}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href={route.private.chat}
+                  className={cn(
+                    buttonVariants({ size: "sm" }),
+                    "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90",
+                  )}
+                >
+                  Start Chatting →
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button & ThemeToggle */}
@@ -142,20 +163,37 @@ export default function Navbar() {
                 </button>
               ))}
               <div className="flex flex-col gap-3 px-3">
-                <Link
-                  href={route.protected.login}
-                  onClick={() => setIsOpen(false)}
-                  className="text-center py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent border border-border transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href={route.private.chat}
-                  onClick={() => setIsOpen(false)}
-                  className="text-center py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  Start Chatting →
-                </Link>
+                {isAuthenticated && user ? (
+                  <Link
+                    href={route.private.chat}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-accent hover:bg-accent/80 border border-border text-foreground text-sm font-semibold transition-colors"
+                  >
+                    <Avatar size="sm" className="bg-primary text-primary-foreground">
+                      <AvatarFallback className="text-primary-foreground text-xs font-bold">
+                        {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{user.name || "Chat"}</span>
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href={route.protected.login}
+                      onClick={() => setIsOpen(false)}
+                      className="text-center py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent border border-border transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href={route.private.chat}
+                      onClick={() => setIsOpen(false)}
+                      className="text-center py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                      Start Chatting →
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
