@@ -39,7 +39,7 @@ export default function TimelineRoadmap() {
     <section
       id="architecture"
       aria-label="Real-Time System Architecture"
-      className="py-20 md:py-28 bg-card border-t border-border"
+      className="py-20 md:py-28 bg-transparent border-t border-border relative z-10"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">

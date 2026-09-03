@@ -7,6 +7,7 @@ import InteractiveContactForm from "@/modules/home/components/interactive-contac
 import JsonLd from "@/modules/home/components/json-ld";
 import Navbar from "@/modules/home/components/navbar";
 import TimelineRoadmap from "@/modules/home/components/timeline-roadmap";
+import GradientBackground from "@/components/custom-ui/gradient-background";
 
 export const metadata: Metadata = {
   title: "ChatFlow - Real-Time Direct & Group Messaging",
@@ -24,9 +25,10 @@ export default function Landing() {
   return (
     <>
       <JsonLd />
-      <div className="bg-background min-h-screen text-foreground flex flex-col font-sans overflow-hidden">
+      <div className="bg-background min-h-screen text-foreground flex flex-col font-sans overflow-x-hidden relative">
+        <GradientBackground />
         <Navbar />
-        <main>
+        <main className="relative z-10 flex-1">
           <Hero />
           <BentoGrid />
           <TimelineRoadmap />

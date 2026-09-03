@@ -9,7 +9,7 @@ export default function FAQAccordion() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <section id="faq" aria-label="FAQ" className="py-20 md:py-28 bg-background">
+    <section id="faq" aria-label="FAQ" className="py-20 md:py-28 bg-transparent border-t border-border/50 relative z-10">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-xs font-mono font-bold tracking-widest text-primary uppercase mb-3">
@@ -36,9 +36,8 @@ export default function FAQAccordion() {
                     {faq.question}
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 text-muted-foreground transition-transform duration-200 shrink-0 ${
-                      isOpen ? "rotate-180 text-primary" : ""
-                    }`}
+                    className={`w-5 h-5 text-muted-foreground transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-primary" : ""
+                      }`}
                   />
                 </button>
 

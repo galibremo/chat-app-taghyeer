@@ -54,7 +54,7 @@ export default function BentoGrid() {
   ];
 
   return (
-    <section id="features" aria-label="Features" className="py-20 md:py-28 bg-card border-y border-border">
+    <section id="features" aria-label="Features" className="py-20 md:py-28 bg-card/60 dark:bg-card/40 backdrop-blur-md border-y border-border relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-xs font-mono font-bold tracking-widest text-primary uppercase mb-3">

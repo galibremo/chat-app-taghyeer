@@ -6,10 +6,11 @@ import { Menu, X } from "@/components/custom-ui/icons";
 import Link from "next/link";
 import { route } from "@/routes/routes";
 import { buttonVariants } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/custom-ui/theme-toggle";
 
 export default function Navbar() {
   const { user, isAuthenticated } = useAuth();
@@ -49,11 +50,10 @@ export default function Navbar() {
     <nav
       id="app-navbar"
       aria-label="Main navigation"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all py-3.5 pb-0 duration-300 ${
-        scrolled
-          ? "bg-background/80 backdrop-blur-md border-b border-border shadow-xs"
-          : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all py-3.5 pb-0 duration-300 ${scrolled
+        ? "bg-background/80 backdrop-blur-md border-b border-border shadow-xs"
+        : "bg-transparent"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between pb-3.5">
@@ -105,15 +105,6 @@ export default function Navbar() {
                   className={cn(buttonVariants({ variant: "outline", size: "sm" }), "cursor-pointer")}
                 >
                   Sign In
-                </Link>
-                <Link
-                  href={route.private.chat}
-                  className={cn(
-                    buttonVariants({ size: "sm" }),
-                    "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90",
-                  )}
-                >
-                  Start Chatting →
                 </Link>
               </>
             )}
@@ -184,13 +175,6 @@ export default function Navbar() {
                       className="text-center py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent border border-border transition-colors"
                     >
                       Sign In
-                    </Link>
-                    <Link
-                      href={route.private.chat}
-                      onClick={() => setIsOpen(false)}
-                      className="text-center py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                      Start Chatting →
                     </Link>
                   </>
                 )}

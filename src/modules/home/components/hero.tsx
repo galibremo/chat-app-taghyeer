@@ -11,12 +11,8 @@ export default function Hero() {
     <section
       id="hero"
       aria-label="Hero"
-      className="relative pt-28 pb-20 md:pt-36 md:pb-32 bg-background overflow-hidden"
+      className="relative pt-28 pb-20 md:pt-36 md:pb-32 bg-transparent overflow-hidden"
     >
-      {/* Radial glow effects */}
-      <div className="absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
-      <div className="absolute top-[30%] right-[15%] w-80 h-80 rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-4xl mx-auto flex flex-col items-center">
           {/* Pill button tag */}

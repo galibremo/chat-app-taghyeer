@@ -17,12 +17,12 @@ import { Button } from "@/components/ui/button";
 export interface ThemeToggleProps {
   variant?: "default" | "colored" | "outline" | "ghost" | "secondary";
   buttonVariant?:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link";
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link";
   size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-xs";
   className?: string;
 }

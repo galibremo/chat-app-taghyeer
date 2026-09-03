@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+
 import { Skeleton } from "@/components/ui/skeleton";
+import ThemeToggle from "@/components/custom-ui/theme-toggle";
 
 interface ChatSidebarProps {
   conversations: NormalizedConversation[];
@@ -83,11 +84,10 @@ export function ChatSidebar({
               </AvatarFallback>
             </Avatar>
             <span
-              className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${
-                isConnected
+              className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${isConnected
                   ? "bg-emerald-500 shadow-emerald-500/50 shadow-xs"
                   : "bg-amber-500 animate-pulse"
-              }`}
+                }`}
               title={
                 isConnected
                   ? "Real-time socket connected"
@@ -102,9 +102,8 @@ export function ChatSidebar({
             </h2>
             <div className="flex items-center gap-1.5 text-[11px]">
               <span
-                className={`font-medium ${
-                  isConnected ? "text-emerald-500" : "text-amber-500"
-                }`}
+                className={`font-medium ${isConnected ? "text-emerald-500" : "text-amber-500"
+                  }`}
               >
                 {isConnected ? "Online" : "Connecting..."}
               </span>
@@ -175,31 +174,28 @@ export function ChatSidebar({
         <div className="flex bg-muted/50 p-1 rounded-xl border border-border text-xs font-medium text-muted-foreground">
           <button
             onClick={() => setActiveTab("all")}
-            className={`cursor-pointer flex-1 py-1 rounded-lg transition-colors ${
-              activeTab === "all"
+            className={`cursor-pointer flex-1 py-1 rounded-lg transition-colors ${activeTab === "all"
                 ? "bg-background text-foreground shadow-xs"
                 : "hover:text-foreground hover:bg-accent"
-            }`}
+              }`}
           >
             All ({conversations.length})
           </button>
           <button
             onClick={() => setActiveTab("direct")}
-            className={`cursor-pointer flex-1 py-1 rounded-lg transition-colors ${
-              activeTab === "direct"
+            className={`cursor-pointer flex-1 py-1 rounded-lg transition-colors ${activeTab === "direct"
                 ? "bg-background text-foreground shadow-xs"
                 : "hover:text-foreground hover:bg-accent"
-            }`}
+              }`}
           >
             Direct
           </button>
           <button
             onClick={() => setActiveTab("group")}
-            className={`cursor-pointer flex-1 py-1 rounded-lg transition-colors ${
-              activeTab === "group"
+            className={`cursor-pointer flex-1 py-1 rounded-lg transition-colors ${activeTab === "group"
                 ? "bg-background text-foreground shadow-xs"
                 : "hover:text-foreground hover:bg-accent"
-            }`}
+              }`}
           >
             Groups
           </button>
@@ -243,11 +239,10 @@ export function ChatSidebar({
             <button
               key={conv._id}
               onClick={() => onSelectConversation(conv._id)}
-              className={`cursor-pointer w-full p-3 rounded-2xl flex items-center gap-3 text-left transition-all duration-150 border ${
-                isActive
+              className={`cursor-pointer w-full p-3 rounded-2xl flex items-center gap-3 text-left transition-all duration-150 border ${isActive
                   ? "bg-accent text-accent-foreground border-border font-medium"
                   : "bg-transparent hover:bg-accent/50 text-foreground border-transparent"
-              }`}
+                }`}
             >
               {/* Conversation Avatar */}
               <div className="relative shrink-0">
@@ -276,9 +271,8 @@ export function ChatSidebar({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1 mb-0.5">
                   <h3
-                    className={`text-xs font-bold truncate ${
-                      isActive ? "text-primary" : "text-foreground"
-                    }`}
+                    className={`text-xs font-bold truncate ${isActive ? "text-primary" : "text-foreground"
+                      }`}
                   >
                     {conv.name}
                   </h3>
