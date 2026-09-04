@@ -176,7 +176,7 @@
   text-shadow: 2px 0 #ff00ea;
   color: #00ffff;
   clip-path: inset(0 33% 0 0);
-  animation: glitch-before 4s infinite alternate-reverse;
+  animation: glitch-before 1.3s infinite;
   opacity: 0;
 }
 
@@ -184,7 +184,7 @@
   text-shadow: -2px 0 #00ffff;
   color: #ff00ea;
   clip-path: inset(0 0 0 33%);
-  animation: glitch-after 4s infinite alternate-reverse;
+  animation: glitch-after 1.3s infinite;
   opacity: 0;
 }
 
@@ -201,43 +201,42 @@
 .glitch-logo:hover:before,
 .glitch-logo:hover:after {
   opacity: 1;
-  animation: glitch 0.3s infinite alternate-reverse;
+  animation: glitch 0.3s infinite;
 }
 
 @keyframes glitch-before {
 
   0%,
-  35% {
+  77% {
     opacity: 0;
     transform: translateX(0);
   }
 
-  40% {
+  81% {
     opacity: 0.8;
     transform: translateX(-2px);
   }
 
-  50% {
+  85% {
     opacity: 0.8;
     transform: translateX(0);
   }
 
-  60% {
+  89% {
     opacity: 0.8;
     transform: translateX(2px);
   }
 
-  70% {
+  93% {
     opacity: 0.8;
     transform: translateX(-1px);
   }
 
-  80% {
+  97% {
     opacity: 0.8;
     transform: translateX(1px);
   }
 
-  85%,
   100% {
     opacity: 0;
     transform: translateX(0);
@@ -247,37 +246,36 @@
 @keyframes glitch-after {
 
   0%,
-  35% {
+  77% {
     opacity: 0;
     transform: translateX(0);
   }
 
-  40% {
+  81% {
     opacity: 0.8;
     transform: translateX(2px);
   }
 
-  50% {
+  85% {
     opacity: 0.8;
     transform: translateX(-1px);
   }
 
-  60% {
+  89% {
     opacity: 0.8;
     transform: translateX(-2px);
   }
 
-  70% {
+  93% {
     opacity: 0.8;
     transform: translateX(1px);
   }
 
-  80% {
+  97% {
     opacity: 0.8;
     transform: translateX(0);
   }
 
-  85%,
   100% {
     opacity: 0;
     transform: translateX(0);
