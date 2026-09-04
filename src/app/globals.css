@@ -176,7 +176,7 @@
   text-shadow: 2px 0 #ff00ea;
   color: #00ffff;
   clip-path: inset(0 33% 0 0);
-  animation: glitch-before 1.3s infinite;
+  animation: glitch-before 2.5s infinite alternate-reverse;
   opacity: 0;
 }
 
@@ -184,7 +184,7 @@
   text-shadow: -2px 0 #00ffff;
   color: #ff00ea;
   clip-path: inset(0 0 0 33%);
-  animation: glitch-after 1.3s infinite;
+  animation: glitch-after 2.5s infinite alternate-reverse;
   opacity: 0;
 }
 
@@ -201,7 +201,7 @@
 .glitch-logo:hover:before,
 .glitch-logo:hover:after {
   opacity: 1;
-  animation: glitch 0.3s infinite;
+  animation: glitch 0.3s infinite alternate-reverse;
 }
 
 @keyframes glitch-before {
