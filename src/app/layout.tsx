@@ -73,7 +73,7 @@ export default async function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        "h-full",
+        "scroll-smooth",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
@@ -81,7 +81,7 @@ export default async function RootLayout({
         figtree.variable,
       )}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col">
         <AuthProvider user={user}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <QueryProvider>

@@ -36,10 +36,10 @@ export function GradientBackground({ className }: GradientBackgroundProps) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
-          opacity: [0.45, 0.75, 0.45],
-          x: [0, 25, 0],
+          opacity: [0.6, 1, 0.6],
+          x: [0, -30, 0],
           y: [0, -20, 0],
-          scale: [1, 1.08, 1],
+          scale: [1, 1.15, 1],
         }}
         transition={{
           duration: 15,
@@ -47,10 +47,10 @@ export function GradientBackground({ className }: GradientBackgroundProps) {
           ease: "easeInOut",
           delay: 1,
         }}
-        className="absolute top-[8%] -right-[15%] sm:right-[2%] w-[450px] sm:w-[650px] h-[450px] sm:h-[650px] rounded-full bg-radial from-brand-blue/15 via-indigo-500/8 to-transparent blur-[120px] sm:blur-[150px] dark:from-brand-blue/22 dark:via-indigo-600/12 dark:to-transparent transform-gpu"
+        className="absolute top-[5%] -right-[5%] sm:right-[8%] w-[500px] sm:w-[750px] h-[500px] sm:h-[750px] rounded-full bg-radial from-brand-blue/25 via-indigo-500/15 to-transparent blur-[120px] sm:blur-[160px] dark:from-brand-blue/35 dark:via-indigo-500/20 dark:to-transparent transform-gpu"
       />
 
-      {/* 3. MID-PAGE LEFT ROYAL PURPLE ACCENT ORB (Features / Bento area) */}
+      {/* 3. MID-PAGE LEFT ROYAL PURPLE / BLUE ACCENT ORB (Features / Bento area) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
@@ -65,14 +65,14 @@ export function GradientBackground({ className }: GradientBackgroundProps) {
           ease: "easeInOut",
           delay: 2.5,
         }}
-        className="absolute top-[38%] -left-[12%] sm:left-[1%] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full bg-radial from-brand-purple/14 via-primary/8 to-transparent blur-[130px] sm:blur-[160px] dark:from-brand-purple/20 dark:via-primary/12 dark:to-transparent transform-gpu"
+        className="absolute top-[38%] -left-[12%] sm:left-[1%] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full bg-radial from-brand-purple/18 via-brand-blue/12 to-transparent blur-[130px] sm:blur-[160px] dark:from-brand-purple/25 dark:via-brand-blue/18 dark:to-transparent transform-gpu"
       />
 
-      {/* 4. MID-PAGE RIGHT CYAN / SKY ACCENT GLOW */}
+      {/* 4. MID-PAGE RIGHT BLUE / SKY ACCENT GLOW */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
-          opacity: [0.35, 0.6, 0.35],
+          opacity: [0.4, 0.7, 0.4],
           x: [0, 15, 0],
           y: [0, -25, 0],
         }}
@@ -82,14 +82,14 @@ export function GradientBackground({ className }: GradientBackgroundProps) {
           ease: "easeInOut",
           delay: 3,
         }}
-        className="absolute top-[52%] -right-[10%] sm:right-[3%] w-[420px] sm:w-[580px] h-[420px] sm:h-[580px] rounded-full bg-radial from-sky-500/12 via-brand-blue/6 to-transparent blur-[120px] sm:blur-[150px] dark:from-sky-400/16 dark:via-brand-blue/10 dark:to-transparent transform-gpu"
+        className="absolute top-[52%] -right-[10%] sm:right-[3%] w-[450px] sm:w-[600px] h-[450px] sm:h-[600px] rounded-full bg-radial from-brand-blue/20 via-sky-500/12 to-transparent blur-[120px] sm:blur-[150px] dark:from-brand-blue/30 dark:via-sky-400/20 dark:to-transparent transform-gpu"
       />
 
       {/* 5. ARCHITECTURE & ROADMAP AREA GLOW (Lower section) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
-          opacity: [0.4, 0.65, 0.4],
+          opacity: [0.45, 0.75, 0.45],
           scale: [0.98, 1.04, 0.98],
         }}
         transition={{
@@ -98,7 +98,7 @@ export function GradientBackground({ className }: GradientBackgroundProps) {
           ease: "easeInOut",
           delay: 1.5,
         }}
-        className="absolute top-[72%] left-1/2 -translate-x-1/2 w-[650px] sm:w-[950px] h-[450px] sm:h-[550px] rounded-full bg-radial from-primary/14 via-brand-purple/8 to-transparent blur-[130px] sm:blur-[170px] dark:from-primary/20 dark:via-brand-purple/12 dark:to-transparent transform-gpu"
+        className="absolute top-[72%] left-1/2 -translate-x-1/2 w-[650px] sm:w-[950px] h-[450px] sm:h-[550px] rounded-full bg-radial from-brand-blue/18 via-brand-purple/12 to-transparent blur-[130px] sm:blur-[170px] dark:from-brand-blue/25 dark:via-brand-purple/18 dark:to-transparent transform-gpu"
       />
 
       {/* 6. SUBTLE LINEAR GRADIENT WASH AT TOP (Seamless navbar transition) */}

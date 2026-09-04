@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, animate } from "motion/react";
 import { Menu, X } from "@/components/custom-ui/icons";
 import Link from "next/link";
 import { route } from "@/routes/routes";
@@ -42,7 +42,18 @@ export default function Navbar() {
   const scrollToSection = (targetId: string) => {
     const element = document.getElementById(targetId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      const navbar = document.getElementById("app-navbar");
+      const navbarHeight = navbar ? navbar.offsetHeight : 0;
+
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - navbarHeight;
+
+      // Use motion's animate for guaranteed smooth scrolling across all browsers and CSS layouts
+      animate(window.scrollY, offsetPosition, {
+        duration: 0.6,
+        ease: [0.32, 0.72, 0, 1], // easeOutCubic
+        onUpdate: (latest) => window.scrollTo(0, latest),
+      });
     }
   };
 
@@ -51,7 +62,7 @@ export default function Navbar() {
       id="app-navbar"
       aria-label="Main navigation"
       className={`fixed top-0 left-0 right-0 z-50 transition-all py-3.5 pb-0 duration-300 ${scrolled
-        ? "bg-background/80 backdrop-blur-md border-b border-border shadow-xs"
+        ? "bg-background/20 backdrop-blur-sm border-b border-border shadow-xs"
         : "bg-transparent"
         }`}
     >
@@ -94,7 +105,7 @@ export default function Navbar() {
                     {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-semibold truncate max-w-[130px]">
+                <span className="text-sm font-semibold truncate max-w-32.5">
                   {user.name || "Chat"}
                 </span>
               </Link>
